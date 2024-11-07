@@ -1,0 +1,157 @@
+*CODE*:.............................run one command at a time..............................
+
+
+use sports_club
+
+//Create Sample Data in users Collection
+db.users.insertMany([
+    { name: "Alice", join_date: new Date("2023-01-15"), sport_preferences: ["Tennis", "Swimming"] },
+    { name: "Bob", join_date: new Date("2023-02-10"), sport_preferences: ["Basketball"] },
+    { name: "Charlie", join_date: new Date("2023-02-22"), sport_preferences: ["Tennis", "Soccer"] },
+    { name: "Daisy", join_date: new Date("2023-03-18"), sport_preferences: ["Badminton"] },
+    { name: "Ethan", join_date: new Date("2023-01-25"), sport_preferences: ["Swimming", "Soccer"] },
+    { name: "Fiona", join_date: new Date("2023-03-01"), sport_preferences: ["Tennis", "Basketball"] }
+])
+
+//Create an Index on sport_preferences
+db.users.createIndex({ sport_preferences: 1 })
+
+//Create an Index on join_date and sport_preferences:
+db.users.createIndex({ join_date: 1, sport_preferences: 1 })
+
+//Return User Names in Upper Case and in Alphabetical Order:
+db.users.aggregate([
+    {
+        $project: {
+            _id: 0,
+            name: { $toUpper: "$name" }
+        }
+    },
+    { $sort: { name: 1 } }
+])
+
+//Return User Names Sorted by the Month They Joined:
+db.users.aggregate([
+    {
+        $project: {
+            _id: 0,
+            name: 1,
+            join_month: { $month: "$join_date" }
+        }
+    },
+    { $sort: { join_month: 1 } }
+])
+
+//Show How Many People Joined Each Month of the Year:
+db.users.aggregate([
+    {
+        $group: {
+            _id: { month: { $month: "$join_date" } },
+            count: { $sum: 1 }
+        }
+    },
+    { $sort: { "_id.month": 1 } }
+])
+
+
+
+*EXPLANATION*:
+-------------------------------------------------------------------------------------------
+Here’s a summary of each part of the MongoDB code you shared:
+
+Selecting the Database:
+
+javascript
+Copy code
+-------------------------------------------------------------------------------------------
+use sports_club
+This command switches the context to the sports_club database, where subsequent operations will take place.
+
+Inserting Sample Data into users Collection:
+
+javascript
+Copy code
+-------------------------------------------------------------------------------------------
+db.users.insertMany([
+    { name: "Alice", join_date: new Date("2023-01-15"), sport_preferences: ["Tennis", "Swimming"] },
+    { name: "Bob", join_date: new Date("2023-02-10"), sport_preferences: ["Basketball"] },
+    { name: "Charlie", join_date: new Date("2023-02-22"), sport_preferences: ["Tennis", "Soccer"] },
+    { name: "Daisy", join_date: new Date("2023-03-18"), sport_preferences: ["Badminton"] },
+    { name: "Ethan", join_date: new Date("2023-01-25"), sport_preferences: ["Swimming", "Soccer"] },
+    { name: "Fiona", join_date: new Date("2023-03-01"), sport_preferences: ["Tennis", "Basketball"] }
+])
+This inserts six documents into the users collection, each representing a user with a name, join date, and a list of sports they prefer.
+
+Creating Indexes:
+
+Index on sport_preferences:
+
+javascript
+Copy code
+-------------------------------------------------------------------------------------------
+db.users.createIndex({ sport_preferences: 1 })
+This creates an index on the sport_preferences field to improve query performance for searching by sports preferences.
+
+Composite Index on join_date and sport_preferences:
+
+javascript
+Copy code
+-------------------------------------------------------------------------------------------
+db.users.createIndex({ join_date: 1, sport_preferences: 1 })
+This index optimizes queries that filter or sort by both join_date and sport_preferences.
+
+Return User Names in Uppercase, Sorted Alphabetically:
+
+javascript
+Copy code
+-------------------------------------------------------------------------------------------
+db.users.aggregate([
+    {
+        $project: {
+            _id: 0,
+            name: { $toUpper: "$name" }
+        }
+    },
+    { $sort: { name: 1 } }
+])
+This aggregation pipeline first converts each user’s name to uppercase and hides the _id field.
+It then sorts the names alphabetically in ascending order.
+Return User Names Sorted by Join Month:
+
+javascript
+Copy code
+-------------------------------------------------------------------------------------------
+db.users.aggregate([
+    {
+        $project: {
+            _id: 0,
+            name: 1,
+            join_month: { $month: "$join_date" }
+        }
+    },
+    { $sort: { join_month: 1 } }
+])
+This pipeline projects the name field and extracts the join_date month as join_month.
+It then sorts the results by join_month in ascending order.
+Count How Many People Joined Each Month:
+
+javascript
+Copy code
+-------------------------------------------------------------------------------------------
+db.users.aggregate([
+    {
+        $group: {
+            _id: { month: { $month: "$join_date" } },
+            count: { $sum: 1 }
+        }
+    },
+    { $sort: { "_id.month": 1 } }
+])
+This groups documents by the month (extracted from join_date) and counts how many users joined each month.
+The output is sorted by month in ascending order to display join counts per month sequentially.
+
+
+
+
+
+

@@ -1,0 +1,119 @@
+*CODE*:
+
+CREATE DATABASE library_system;
+USE library_system;
+
+create table library(book_id int primary key, book_name varchar(25), author varchar(25));
+create table library_backup(backup_id int auto_increment primary key, book_id int,book_name varchar(25), author varchar(25), action varchar(25)); 
+
+Delimiter $$
+create trigger before_update
+before update on library
+for each row 
+begin
+	insert into library_backup(book_id ,book_name, author , action) values (old.book_id, old.book_name, old.author, 'UPDATE');
+end;
+$$
+Delimiter ;
+
+Delimiter $$
+create trigger before_delete
+before delete on library
+for each row 
+begin
+	insert into library_backup(book_id ,book_name, author , action) values (old.book_id, old.book_name, old.author, 'DELETE');
+end;
+$$
+Delimiter ;
+
+Delimiter $$
+create trigger after_insert
+before insert on library
+for each row 
+begin
+	insert into library_backup(book_id ,book_name, author , action) values (new.book_id, new.book_name, new.author, 'INSERT');
+end;
+$$
+Delimiter ;
+
+
+*Test the Triggers*:
+
+You can now test the triggers by performing some operations (insert, update, delete) on the library table and checking the library_backup table.
+
+Insert a new book:
+Code:
+-------------------------------------------------------------------------------------------
+INSERT INTO library (book_id, book_name, author) VALUES (1, 'The Great Gatsby', 'F. Scott Fitzgerald');
+-------------------------------------------------------------------------------------------
+
+Check the library_backup table to see the inserted record:
+Code:
+-------------------------------------------------------------------------------------------
+
+SELECT * FROM library_backup;
+-------------------------------------------------------------------------------------------
+
+
+Update a book:
+Code:
+-------------------------------------------------------------------------------------------
+
+SELECT * FROM library_backup;
+-------------------------------------------------------------------------------------------
+
+Check the backup again:
+Code:
+-------------------------------------------------------------------------------------------
+
+SELECT * FROM library_backup;
+-------------------------------------------------------------------------------------------
+
+Delete a book:
+Code:
+-------------------------------------------------------------------------------------------
+
+DELETE FROM library WHERE book_id = 1;
+-------------------------------------------------------------------------------------------
+
+Check the backup one last time:
+Code:
+-------------------------------------------------------------------------------------------
+
+SELECT * FROM library_backup;
+-------------------------------------------------------------------------------------------
+
+After running the code, you can reset the delimiter back to semicolon (;) if you're using it temporarily with DELIMITER $$:
+Code:
+-------------------------------------------------------------------------------------------
+DELIMITER ;
+-------------------------------------------------------------------------------------------
+
+EXPLANATION:
+
+Here’s a concise explanation of the code:
+
+1. Table Definitions
+library table: Stores information about books, with columns for book_id, book_name, and author.
+library_backup table: Keeps a record of changes (insert, update, delete) to the library table, with columns for book_id, book_name, author, and the type of action (INSERT, UPDATE, or DELETE).
+2. Triggers
+Triggers are special procedures that automatically execute in response to changes in the library table.
+
+before_update Trigger: Before updating any record in the library table, this trigger inserts the old data into library_backup with an action labeled 'UPDATE'.
+
+before_delete Trigger: Before deleting a record from the library table, this trigger inserts the old data into library_backup with an action labeled 'DELETE'.
+
+after_insert Trigger: Before inserting a new record into the library table, this trigger inserts the new data into library_backup with an action labeled 'INSERT'.
+
+Purpose:
+These triggers help maintain a backup of changes made to the library table, recording the action type (insert, update, or delete) and the book details into the library_backup table.
+In short, the code ensures that any changes in the library table are automatically logged in library_backup with an action label for tracking purposes.
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,107 @@
+*CODE*:
+
+CREATE TABLE student (
+    Roll_No INT,
+    Name VARCHAR(20),
+    Total_marks INT
+);
+
+CREATE TABLE result (
+    Roll_No INT,
+    Class VARCHAR(20)
+);
+
+INSERT INTO student VALUES (1, 'Krushna', 1400);
+INSERT INTO student VALUES (2, 'Yash', 892);
+INSERT INTO student VALUES (3, 'Vishwa', 925);
+INSERT INTO student VALUES (4, 'Shravani', 1000);
+INSERT INTO student VALUES (5, 'Gauri', 1200);
+
+DELIMITER $$
+
+CREATE PROCEDURE proc_Grade (IN roll INT, IN sName VARCHAR(20))
+BEGIN
+    DECLARE i_marks INT;
+    
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error Occurred';
+    END;
+    
+    -- Start a transaction
+    START TRANSACTION;
+
+    -- Get the total marks for the student with matching roll number and name
+    SELECT Total_marks INTO i_marks 
+    FROM student 
+    WHERE Roll_No = roll AND Name = sName;
+
+    -- Insert into result based on marks
+    IF (i_marks <= 1500 AND i_marks >= 990) THEN
+        INSERT INTO result VALUES (roll, 'distinction');
+    ELSEIF (i_marks <= 989 AND i_marks >= 900) THEN
+        INSERT INTO result VALUES (roll, 'first class');
+    ELSEIF (i_marks <= 899 AND i_marks >= 825) THEN
+        INSERT INTO result VALUES (roll, 'higher second class');
+    END IF;
+
+    -- Commit the transaction if no errors
+    COMMIT;
+END $$
+
+DELIMITER ;
+
+
+
+*EXPLANATION*:
+
+To execute the code for creating tables, inserting data, and creating the stored procedure in MySQL, follow these steps:
+
+Step 1: Open MySQL Command Line or MySQL Workbench
+
+1.MySQL Command Line: Open the MySQL command line and connect to your database by entering:
+------------------------------------------------------------------------------------------
+code:
+-----------------------------------------------------------------------------------------
+mysql -u your_username -p
+------------------------------------------------------------------------------------------
+
+Then, enter your password.
+2.MySQL Workbench: Open MySQL Workbench and connect to your database.
+
+Step 2: Execute the Code
+
+1.Copy and Paste the Code: Copy the entire code provided and paste it into the MySQL command line or Workbench query window.
+
+2.Run the Code:
+
+=If using MySQL Workbench, click Execute (lightning bolt icon) to run the entire code.
+=If using the command line, paste the code directly and press Enter after each part or use source to execute the file if you've saved the code to a .sql file.
+
+The code should execute in the following order:
+
+=Create tables: student and result.
+=Insert data: Insert initial records into the student table.
+=Define the stored procedure: proc_Grade.
+
+Step 3: Call the Stored Procedure
+Once the code is executed successfully, you can test the stored procedure by calling it. For example:
+code:
+------------------------------------------------------------------------------------------
+sql
+------------------------------------------------------------------------------------------
+CALL proc_Grade(1, 'Krushna');
+------------------------------------------------------------------------------------------
+This will evaluate the Total_marks for the student with Roll_No = 1 and Name = 'Krushna', then insert the appropriate grade into the result table.
+
+Step 4: Verify the Results
+To see if the procedure worked as expected, check the result table:
+
+------------------------------------------------------------------------------------------
+sql
+------------------------------------------------------------------------------------------
+SELECT * FROM result;
+------------------------------------------------------------------------------------------
+
+This will show the inserted grades based on the marks in the student table.

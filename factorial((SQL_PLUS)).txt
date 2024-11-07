@@ -1,0 +1,68 @@
+*CODE*:
+
+SET SERVEROUTPUT ON;
+SET VERIFY OFF;
+Declare
+num integer;
+factorial integer := 1;
+begin
+num := &num;
+if num < 0 then
+raise_application_error(-20001,'factorial is not defined for negative numbers');
+else
+for i in 1..num loop
+factorial := factorial * i;
+end loop;
+dbms_output.put_line('The factorial of ' || num || ' is ' || factorial);
+end if;
+exception
+when others then
+dbms_output.put_line('Error : ' || sqlerrm);
+end;
+/
+
+
+*OUTPUT*:
+
+Enter value for num: -1
+Error : ORA-20001: factorial is not defined for negative numbers
+
+PL/SQL procedure successfully completed.
+
+SQL> /
+Enter value for num: 4
+The factorial of 4 is 24
+
+PL/SQL procedure successfully completed.
+
+
+
+EXPLANATION:
+
+This PL/SQL block calculates the factorial of a given number. Here's a breakdown of the code:
+
+SET SERVEROUTPUT ON;
+Enables output to display messages from DBMS_OUTPUT.PUT_LINE.
+
+SET VERIFY OFF;
+Disables SQL*Plus’s display of the substitution variable (&num) to make the output cleaner.
+
+Declare Section:
+
+num: An integer variable to store the number entered by the user.
+factorial: Initialized to 1, this variable will store the computed factorial.
+BEGIN Block:
+
+num := &num;: Prompts the user to enter a value for num.
+if num < 0 then ...: Checks if num is negative. If so, raises a custom error with the message "factorial is not defined for negative numbers" (since factorial is only defined for non-negative integers).
+Loop (for i in 1..num loop): A for loop that iterates from 1 to num. In each iteration, factorial is multiplied by the loop variable i to calculate the factorial.
+DBMS_OUTPUT.PUT_LINE: Outputs the result: "The factorial of [num] is [factorial]".
+Exception Block:
+
+when others then: Catches any unexpected errors, printing an error message with sqlerrm (which provides the error message for the exception).
+Example: If the user enters 5, the output will be:
+........
+Copy code
+The factorial of 5 is 120
+........
+This code calculates the factorial of a positive integer or displays an error if the input is negative.

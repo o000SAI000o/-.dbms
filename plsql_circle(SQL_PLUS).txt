@@ -1,0 +1,126 @@
+*Code*:
+
+SQL> create table circlearea(radius int,area int);
+Table created.
+
+SQL> select * from circlearea;
+no rows selected
+
+SQL> edit a1.sql
+
+declare
+r1 circlearea.radius%type;
+cir_area int;
+pi int;
+begin
+r1:=5;
+pi:=3.14;
+for r1 in 5..9
+loop
+cir_area:=pi*(r1*r1);
+insert into circlearea values(r1,cir_area);
+end loop;
+end;
+/
+SQL> @a1.sql
+
+PL/SQL procedure successfully completed.
+
+OUTPUT:
+
+SQL> select * from circlearea;
+
+    RADIUS       AREA
+---------- ----------
+         5         75
+         6        108
+         7        147
+         8        192
+         9        243
+
+
+
+
+EXPLANATION:
+
+The code provided demonstrates how to use PL/SQL to calculate and insert the areas of circles based on different radii into a table. Here's a step-by-step explanation of the process:
+
+1. **Creating the Table:**
+   ```sql
+   SQL> create table circlearea(radius int, area int);
+   ```
+   - This SQL statement creates a table named `circlearea` with two columns: 
+     - `radius` of type `int` to store the radius of the circle.
+     - `area` of type `int` to store the calculated area of the circle.
+
+2. **Querying the Table (Initially Empty):**
+   ```sql
+   SQL> select * from circlearea;
+   ```
+   - The query shows that the `circlearea` table is empty at this point since no data has been inserted yet.
+
+3. **Editing the PL/SQL Script:**
+   ```sql
+   SQL> edit a1.sql
+   ```
+   - This command is used to open the `a1.sql` script in the editor. This is where the PL/SQL code to calculate and insert the circle areas will be written.
+
+4. **PL/SQL Block Explanation:**
+   ```sql
+   declare
+       r1 circlearea.radius%type;
+       cir_area int;
+       pi int;
+   begin
+       r1 := 5;
+       pi := 3.14;
+       for r1 in 5..9 loop
+           cir_area := pi * (r1 * r1);
+           insert into circlearea values(r1, cir_area);
+       end loop;
+   end;
+   ```
+   - **Declaration Section:**
+     - `r1`: A variable to store the radius of the circle, which uses the type from the `radius` column in the `circlearea` table (`circlearea.radius%type` ensures it matches the column's datatype).
+     - `cir_area`: A variable to store the calculated area of the circle.
+     - `pi`: A constant variable used to store the value of π (approximately 3.14).
+
+   - **Execution Section:**
+     - `r1 := 5`: Initializes the radius variable `r1` with the value 5.
+     - `pi := 3.14`: Assigns the value of π (3.14) to the variable `pi`.
+     - `for r1 in 5..9 loop`: This loop iterates through the values of `r1` from 5 to 9 (inclusive).
+       - `cir_area := pi * (r1 * r1)`: This line calculates the area of the circle using the formula **Area = π * radius²**.
+       - `insert into circlearea values(r1, cir_area)`: This inserts the calculated `r1` (radius) and `cir_area` (calculated area) into the `circlearea` table for each value of `r1`.
+     - `end loop;`: Marks the end of the loop.
+     - `end;`: Marks the end of the PL/SQL block.
+
+5. **Executing the Script:**
+   ```sql
+   SQL> @a1.sql
+   ```
+   - The `@a1.sql` command executes the PL/SQL block written in the `a1.sql` script. The loop calculates the area for radii from 5 to 9 and inserts these values into the `circlearea` table.
+
+6. **Querying the Table After Execution:**
+   ```sql
+   SQL> select * from circlearea;
+   ```
+   - After executing the PL/SQL block, the `circlearea` table now contains the following data:
+     ```
+     RADIUS  AREA
+     ------- -----
+     5       75
+     6       108
+     7       147
+     8       192
+     9       243
+     ```
+     - These values correspond to the calculated areas of circles with radii 5 through 9 using the formula **Area = π * radius²** with π ≈ 3.14.
+
+### Summary of Calculations:
+- For radius 5: Area = 3.14 * (5 * 5) = 75
+- For radius 6: Area = 3.14 * (6 * 6) = 108
+- For radius 7: Area = 3.14 * (7 * 7) = 147
+- For radius 8: Area = 3.14 * (8 * 8) = 192
+- For radius 9: Area = 3.14 * (9 * 9) = 243
+
+The script successfully inserted the calculated areas of circles with radii 5 to 9 into the table.

@@ -1,0 +1,462 @@
+CODE:
+
+-- 1) Create Department Table
+CREATE TABLE Department (
+    deptno INT PRIMARY KEY,
+    dname VARCHAR(50),
+    location VARCHAR(50)
+);
+
+-- 2) Insert Records into Department Table
+INSERT INTO Department (deptno, dname, location) VALUES (10, 'Accounting', 'Mumbai');
+INSERT INTO Department (deptno, dname, location) VALUES (20, 'Research', 'Pune');
+INSERT INTO Department (deptno, dname, location) VALUES (30, 'Sales', 'Nashik');
+INSERT INTO Department (deptno, dname, location) VALUES (40, 'Operations', 'Nagpur');
+
+-- 3) List Department Information
+SELECT * FROM Department;
+
+-- 4) Create Employee Table
+CREATE TABLE Employee (
+    empno INT PRIMARY KEY,
+    ename VARCHAR(50),
+    job VARCHAR(50),
+    mgr INT,
+    joined_date DATE,
+    salary DECIMAL(10, 2),
+    commission DECIMAL(10, 2),
+    deptno INT,
+    address VARCHAR(100),
+    FOREIGN KEY (deptno) REFERENCES Department(deptno)
+);
+
+-- 5) Insert Records into Employee Table with TO_DATE for dates
+INSERT INTO Employee (empno, ename, job, mgr, joined_date, salary, commission, deptno, address)
+VALUES (1001, 'Nilesh Joshi', 'Clerk', 1005, TO_DATE('1995-12-17', 'YYYY-MM-DD'), 2800, 600, 20, 'Nashik');
+
+INSERT INTO Employee (empno, ename, job, mgr, joined_date, salary, commission, deptno, address)
+VALUES (1002, 'Avinash Pawar', 'Salesman', 1003, TO_DATE('1996-02-20', 'YYYY-MM-DD'), 5000, 1200, 30, 'Nagpur');
+
+INSERT INTO Employee (empno, ename, job, mgr, joined_date, salary, commission, deptno, address)
+VALUES (1003, 'Amit Kumar', 'Manager', 1004, TO_DATE('1986-04-02', 'YYYY-MM-DD'), 2000, NULL, 30, 'Pune');
+
+INSERT INTO Employee (empno, ename, job, mgr, joined_date, salary, commission, deptno, address)
+VALUES (1004, 'Nitin Kulkarni', 'President', NULL, TO_DATE('1986-04-19', 'YYYY-MM-DD'), 50000, NULL, 10, 'Mumbai');
+
+INSERT INTO Employee (empno, ename, job, mgr, joined_date, salary, commission, deptno, address)
+VALUES (1005, 'Niraj Sharma', 'Analyst', 1003, TO_DATE('1998-12-03', 'YYYY-MM-DD'), 12000, NULL, 20, 'Satara');
+
+INSERT INTO Employee (empno, ename, job, mgr, joined_date, salary, commission, deptno, address)
+VALUES (1006, 'Pushkar Deshpande', 'Salesman', 1003, TO_DATE('1996-09-01', 'YYYY-MM-DD'), 6500, 1500, 30, 'Pune');
+
+INSERT INTO Employee (empno, ename, job, mgr, joined_date, salary, commission, deptno, address)
+VALUES (1007, 'Sumit Patil', 'Manager', 1004, TO_DATE('1991-05-01', 'YYYY-MM-DD'), 25000, NULL, 20, 'Mumbai');
+
+INSERT INTO Employee (empno, ename, job, mgr, joined_date, salary, commission, deptno, address)
+VALUES (1008, 'Ravi Sawant', 'Analyst', 1007, TO_DATE('1995-11-17', 'YYYY-MM-DD'), 10000, NULL, NULL, 'Amaravati');
+
+-- 6) Display Employee Information with Explicit Column Names
+SELECT empno AS "Employee Number", ename AS "Employee Name", job AS "Job Title", 
+       mgr AS "Manager ID", joined_date AS "Joining Date", salary AS "Salary", 
+       commission AS "Commission", deptno AS "Department Number", address AS "Address"
+FROM Employee;
+
+-- 7) Add Phone Number Column in Employee Table with Default Value and NOT NULL Constraint
+ALTER TABLE Employee 
+ADD phone_number VARCHAR(15) DEFAULT '000-000-0000' NOT NULL;
+
+-- 8) Display Unique Job Titles from Employee Table
+SELECT DISTINCT job FROM Employee;
+
+-- 9) Update Location of Department 40 to 'Bangalore' Instead of 'Nagpur'
+UPDATE Department
+SET location = 'Bangalore'
+WHERE deptno = 40;
+
+-- 10) Delete Record of 'Pushkar Deshpande' from Employee Table
+DELETE FROM Employee
+WHERE ename = 'Pushkar Deshpande';
+
+-- 11) Create Department_Temp Table with Same Structure as Department (No Data)
+CREATE TABLE Department_Temp AS SELECT * FROM Department WHERE 1 = 0;
+
+-- 12) Insert Rows from Department Table into Department_Temp Table
+INSERT INTO Department_Temp
+SELECT * FROM Department;
+
+-- 13) Change Name of Employee with ID 1003 to 'Nikhil Gosavi'
+UPDATE Employee
+SET ename = 'Nikhil Gosavi'
+WHERE empno = 1003;
+
+-- 14) Display Employees with Salary Between 5000 and 20000
+SELECT * FROM Employee
+WHERE salary BETWEEN 5000 AND 20000;
+
+-- 15) Display Employees Excluding Job Title 'Salesman'
+SELECT * FROM Employee
+WHERE job <> 'Salesman';
+
+-- 16) Display Employees with Job Title 'Manager' or 'Analyst' (Using OR and IN Operators)
+SELECT * FROM Employee
+WHERE job = 'Manager' OR job = 'Analyst';
+
+SELECT * FROM Employee
+WHERE job IN ('Manager', 'Analyst');
+
+-- 17) Display Employee Name & Department Number for Departments 10, 20, 30, and 40
+SELECT ename, deptno FROM Employee
+WHERE deptno IN (10, 20, 30, 40);
+
+-- 18) Display Employee Number, Name, Job, and Commission of Employees Without Commission
+SELECT empno, ename, job, commission FROM Employee
+WHERE commission IS NULL;
+
+-- 19) Display Name & Salary of Employees Whose Salary is Not Between 5000 and 10000
+SELECT ename, salary FROM Employee
+WHERE salary NOT BETWEEN 5000 AND 10000;
+
+-- 20) Find Names & Joined Date of Employees Whose Names Start With 'A'
+SELECT ename, joined_date FROM Employee
+WHERE ename LIKE 'A%';
+
+-- 21) Find Names of Employees Having 'i' as the Second Letter in Their Names
+SELECT ename FROM Employee
+WHERE ename LIKE '_i%';
+
+-- 22) Find Employee Number and Name of Employees With Non-NULL Commission
+SELECT empno, ename FROM Employee
+WHERE commission IS NOT NULL;
+
+-- 23) Display All Employee Information in Descending Order of Employee Number
+SELECT * FROM Employee
+ORDER BY empno DESC;
+
+-- 24) Display Minimum, Maximum, Sum & Average Salary of Each Job Type
+SELECT job, MIN(salary) AS "Min Salary", MAX(salary) AS "Max Salary", 
+       SUM(salary) AS "Total Salary", AVG(salary) AS "Average Salary"
+FROM Employee
+GROUP BY job;
+
+-- 25) Display Number of Employees in Each Department
+SELECT deptno, COUNT(*) AS "Employee Count"
+FROM Employee
+GROUP BY deptno;
+
+-- 26) Select Employee Number and Name According to Annual Salary in Ascending Order
+SELECT empno, ename, (salary * 12) AS "Annual Salary"
+FROM Employee
+ORDER BY "Annual Salary" ASC;
+
+-- 27) Find Department Number and Maximum Salary Where Maximum Salary is Greater Than 5000
+SELECT deptno, MAX(salary) AS "Max Salary"
+FROM Employee
+GROUP BY deptno
+HAVING MAX(salary) > 5000;
+
+-- 28) Find All Distinct Column Values From Employee & Department Tables
+SELECT deptno FROM Employee
+UNION
+SELECT deptno FROM Department;
+
+-- 29) Find All Column Values With Duplicates From Employee & Department Tables
+SELECT deptno FROM Employee
+UNION ALL
+SELECT deptno FROM Department;
+
+-- 30) Find All Column Values Common in Both Employee & Department Tables
+SELECT deptno FROM Employee
+INTERSECT
+SELECT deptno FROM Department;
+
+-- 31) Find All Distinct Column Values in Employee Table but Not in Department Table
+SELECT deptno FROM Employee
+EXCEPT
+SELECT deptno FROM Department;
+
+-- 32) Display Number of Employees in Department 30 Who Earn Commission
+SELECT COUNT(*) AS "Commissioned Employees"
+FROM Employee
+WHERE deptno = 30 AND commission IS NOT NULL;
+
+
+
+
+
+
+
+EXPLANATION:
+
+
+
+The code provided performs various operations on two tables, `Department` and `Employee`, and covers a wide range of SQL tasks including data creation, updates, retrieval, filtering, and aggregations. Here’s a more detailed breakdown of the code:
+
+### **1) Creating the Department Table**
+```sql
+CREATE TABLE Department (
+    deptno INT PRIMARY KEY,
+    dname VARCHAR(50),
+    location VARCHAR(50)
+);
+```
+- **Purpose**: Creates the `Department` table, which includes the department number (`deptno`), department name (`dname`), and the department location (`location`).
+- **Key Points**: 
+  - `deptno` is the primary key, meaning each department must have a unique department number.
+
+### **2) Inserting Records into the Department Table**
+```sql
+INSERT INTO Department (deptno, dname, location) VALUES (10, 'Accounting', 'Mumbai');
+```
+- **Purpose**: Adds rows into the `Department` table, representing different departments in the organization.
+- **Key Points**: Each department has a unique department number, a name, and a location.
+
+### **3) Displaying Department Information**
+```sql
+SELECT * FROM Department;
+```
+- **Purpose**: Retrieves and displays all rows and columns from the `Department` table.
+- **Key Points**: Useful for confirming that the data has been inserted correctly.
+
+### **4) Creating the Employee Table**
+```sql
+CREATE TABLE Employee (
+    empno INT PRIMARY KEY,
+    ename VARCHAR(50),
+    job VARCHAR(50),
+    mgr INT,
+    joined_date DATE,
+    salary DECIMAL(10, 2),
+    commission DECIMAL(10, 2),
+    deptno INT,
+    address VARCHAR(100),
+    FOREIGN KEY (deptno) REFERENCES Department(deptno)
+);
+```
+- **Purpose**: Creates the `Employee` table to store employee details such as employee number (`empno`), name (`ename`), job title (`job`), salary (`salary`), and the department number (`deptno`).
+- **Key Points**: 
+  - `empno` is the primary key for employees.
+  - `deptno` is a foreign key that links each employee to a specific department.
+  - The table includes employee-specific information like job role and address.
+
+### **5) Inserting Records into the Employee Table**
+```sql
+INSERT INTO Employee (empno, ename, job, mgr, joined_date, salary, commission, deptno, address)
+VALUES (1001, 'Nilesh Joshi', 'Clerk', 1005, TO_DATE('1995-12-17', 'YYYY-MM-DD'), 2800, 600, 20, 'Nashik');
+```
+- **Purpose**: Inserts records for employees into the `Employee` table.
+- **Key Points**: Employee details are inserted with `TO_DATE()` for formatting the date fields.
+
+### **6) Displaying Employee Information with Explicit Column Names**
+```sql
+SELECT empno AS "Employee Number", ename AS "Employee Name", job AS "Job Title", 
+       mgr AS "Manager ID", joined_date AS "Joining Date", salary AS "Salary", 
+       commission AS "Commission", deptno AS "Department Number", address AS "Address"
+FROM Employee;
+```
+- **Purpose**: Displays employee data with specific column names, using aliases for better readability.
+- **Key Points**: It lists employees with their job titles, manager ID, joining date, salary, commission, and department number.
+
+### **7) Altering the Employee Table**
+```sql
+ALTER TABLE Employee 
+ADD phone_number VARCHAR(15) DEFAULT '000-000-0000' NOT NULL;
+```
+- **Purpose**: Adds a new column `phone_number` to the `Employee` table with a default value and a `NOT NULL` constraint to ensure every employee has a phone number.
+
+### **8) Displaying Unique Job Titles**
+```sql
+SELECT DISTINCT job FROM Employee;
+```
+- **Purpose**: Retrieves all distinct job titles from the `Employee` table.
+- **Key Points**: Ensures that only unique job titles are returned (i.e., no duplicates).
+
+### **9) Updating Department Location**
+```sql
+UPDATE Department
+SET location = 'Bangalore'
+WHERE deptno = 40;
+```
+- **Purpose**: Updates the location of department 40 to 'Bangalore'.
+- **Key Points**: Useful for updating the location of specific departments in the organization.
+
+### **10) Deleting an Employee Record**
+```sql
+DELETE FROM Employee
+WHERE ename = 'Pushkar Deshpande';
+```
+- **Purpose**: Deletes the employee record of 'Pushkar Deshpande' from the `Employee` table.
+- **Key Points**: Use this operation with caution as it permanently removes data.
+
+### **11) Creating a Temporary Department Table**
+```sql
+CREATE TABLE Department_Temp AS SELECT * FROM Department WHERE 1 = 0;
+```
+- **Purpose**: Creates an empty `Department_Temp` table with the same structure as the `Department` table.
+- **Key Points**: This operation does not insert any data because of the `WHERE 1 = 0` condition, ensuring no rows are copied.
+
+### **12) Inserting Data into the Temporary Department Table**
+```sql
+INSERT INTO Department_Temp
+SELECT * FROM Department;
+```
+- **Purpose**: Copies all records from the `Department` table into the `Department_Temp` table.
+- **Key Points**: This operation allows you to create a backup or duplicate data temporarily.
+
+### **13) Updating Employee Name**
+```sql
+UPDATE Employee
+SET ename = 'Nikhil Gosavi'
+WHERE empno = 1003;
+```
+- **Purpose**: Updates the name of the employee with `empno` 1003 to 'Nikhil Gosavi'.
+- **Key Points**: This operation modifies existing data.
+
+### **14) Filtering Employees by Salary Range**
+```sql
+SELECT * FROM Employee
+WHERE salary BETWEEN 5000 AND 20000;
+```
+- **Purpose**: Filters employees whose salaries are between 5000 and 20000.
+- **Key Points**: Useful for reviewing employees within a specific salary range.
+
+### **15) Excluding Specific Job Title**
+```sql
+SELECT * FROM Employee
+WHERE job <> 'Salesman';
+```
+- **Purpose**: Displays all employees whose job title is not 'Salesman'.
+- **Key Points**: The `<>` operator is used for inequality.
+
+### **16) Employees with 'Manager' or 'Analyst' Jobs**
+```sql
+SELECT * FROM Employee
+WHERE job = 'Manager' OR job = 'Analyst';
+```
+- **Purpose**: Retrieves employees who have either the job title 'Manager' or 'Analyst'.
+- **Key Points**: The `OR` operator is used to combine multiple conditions.
+
+### **17) Employees in Specific Departments**
+```sql
+SELECT ename, deptno FROM Employee
+WHERE deptno IN (10, 20, 30, 40);
+```
+- **Purpose**: Displays employees who belong to departments 10, 20, 30, and 40.
+- **Key Points**: The `IN` operator helps to filter by multiple values.
+
+### **18) Employees Without Commission**
+```sql
+SELECT empno, ename, job, commission FROM Employee
+WHERE commission IS NULL;
+```
+- **Purpose**: Displays employees who do not have a commission (i.e., `commission IS NULL`).
+
+### **19) Employees Outside Specific Salary Range**
+```sql
+SELECT ename, salary FROM Employee
+WHERE salary NOT BETWEEN 5000 AND 10000;
+```
+- **Purpose**: Finds employees whose salaries are **not** between 5000 and 10000.
+
+### **20) Employees Whose Names Start with 'A'**
+```sql
+SELECT ename, joined_date FROM Employee
+WHERE ename LIKE 'A%';
+```
+- **Purpose**: Finds employees whose names start with 'A'.
+- **Key Points**: The `LIKE` operator is used with a wildcard (`%`) to match patterns.
+
+### **21) Employees with 'i' as the Second Letter**
+```sql
+SELECT ename FROM Employee
+WHERE ename LIKE '_i%';
+```
+- **Purpose**: Finds employees whose names have 'i' as the second letter.
+
+### **22) Employees with Non-NULL Commission**
+```sql
+SELECT empno, ename FROM Employee
+WHERE commission IS NOT NULL;
+```
+- **Purpose**: Lists employees who have a non-null commission.
+
+### **23) Sorting Employees by Employee Number**
+```sql
+SELECT * FROM Employee
+ORDER BY empno DESC;
+```
+- **Purpose**: Displays employee records sorted by `empno` in descending order.
+
+### **24) Salary Statistics by Job**
+```sql
+SELECT job, MIN(salary) AS "Min Salary", MAX(salary) AS "Max Salary", 
+       SUM(salary) AS "Total Salary", AVG(salary) AS "Average Salary"
+FROM Employee
+GROUP BY job;
+```
+- **Purpose**: Displays salary statistics (min, max, sum, and average) for each job type.
+- **Key Points**: The `GROUP BY` clause groups employees by job type, and aggregate functions (`MIN`, `MAX`, `SUM`, `AVG`) are used to calculate the statistics.
+
+### **25) Counting Employees in Each Department**
+```sql
+SELECT deptno, COUNT(*) AS "Employee Count"
+FROM Employee
+GROUP BY deptno;
+```
+- **Purpose**: Counts the number of employees in each department.
+
+### **26) Sorting Employees by Annual Salary**
+```sql
+SELECT empno,
+
+ ename, salary, salary * 12 AS "Annual Salary"
+FROM Employee
+ORDER BY "Annual Salary" ASC;
+```
+- **Purpose**: Displays employees along with their annual salary (calculated by multiplying salary by 12), sorted in ascending order.
+
+### **27) Departments with Maximum Salary Greater Than 5000**
+```sql
+SELECT deptno FROM Employee
+GROUP BY deptno
+HAVING MAX(salary) > 5000;
+```
+- **Purpose**: Displays departments where the maximum salary exceeds 5000.
+
+### **28) Distinct Department Numbers**
+```sql
+SELECT DISTINCT deptno FROM Employee;
+```
+- **Purpose**: Lists unique department numbers from the `Employee` table.
+
+### **29) Displaying Department Numbers with Duplicates**
+```sql
+SELECT deptno FROM Employee
+UNION ALL
+SELECT deptno FROM Department;
+```
+- **Purpose**: Retrieves department numbers from both tables, including duplicates.
+
+### **30) Common Department Numbers**
+```sql
+SELECT deptno FROM Employee
+INTERSECT
+SELECT deptno FROM Department;
+```
+- **Purpose**: Finds department numbers that are common to both the `Employee` and `Department` tables.
+
+### **31) Department Numbers in Employee Table but Not Department Table**
+```sql
+SELECT deptno FROM Employee
+MINUS
+SELECT deptno FROM Department;
+```
+- **Purpose**: Displays department numbers that exist in the `Employee` table but not in the `Department` table.
+
+### **32) Counting Commissioned Employees in Department 30**
+```sql
+SELECT COUNT(*) FROM Employee
+WHERE deptno = 30 AND commission IS NOT NULL;
+```
+- **Purpose**: Counts the number of employees in department 30 who receive a commission.
+
+This SQL script covers a wide range of real-world scenarios, from creating and updating tables to querying data with complex conditions, sorting, and aggregating information. It simulates many typical tasks in database management, particularly for human resources systems.

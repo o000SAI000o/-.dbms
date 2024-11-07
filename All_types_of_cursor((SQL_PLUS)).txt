@@ -1,0 +1,89 @@
+*CODE*:
+
+All types of cursor
+
+create table o_roll(roll int, name varchar(20));
+create table n_roll(roll int, name varchar(20));
+
+insert into o_roll values(1,'alice');
+insert into o_roll values(2,'bob');
+insert into o_roll values(3,'charlie');
+
+insert into n_roll values(2,'brain');
+insert into n_roll values(3,'chelsi');
+insert into n_roll values(4,'Dan');
+insert into n_roll values(5,'Elon');
+
+declare 
+	cursor new_records(p_roll int) is
+	select roll,name from o_roll
+	where roll = p_roll;
+
+	v_roll number;
+	v_name varchar(20);
+begin
+
+	for record in (select roll,name from n_roll) loop
+		open new_records(record.roll);
+		fetch new_records into v_roll,v_name;
+
+	if new_records%NOTFOUND then
+		insert into o_roll values(record.roll,record.name);
+		DBMS_OUTPUT.PUT_LINE('Inserted Roll No: ' || record.roll || ' Name: ' || record.name);
+
+	else DBMS_OUTPUT.PUT_LINE('Skipped Roll No: ' || record.roll || ' as already exist');
+	
+	end if;
+	close new_records;
+	end loop;
+
+end;
+/
+
+
+EXPLANATION:
+-------------------------------------------------------------------------------------------
+Here’s a breakdown of the code, which demonstrates the use of explicit and implicit cursors in PL/SQL:
+
+Explanation of the Code
+1.Tables Creation:
+
+=Creates two tables, o_roll and n_roll, each with roll (integer) and name (varchar)     columns.
+=Inserts some sample records into each table. o_roll represents an "original" set of  records, while n_roll represents a "new" set.
+
+2.Explicit Cursor Declaration:
+
+=Declares an explicit cursor new_records(p_roll INT) that takes a roll number as a parameter.
+=This cursor fetches records from o_roll where the roll matches the p_roll parameter.
+
+3.Variables Declaration:
+
+=v_roll and v_name variables are defined to hold the values fetched by the new_records cursor.
+
+4.Loop Through n_roll Table (Implicit Cursor):
+
+=The FOR loop implicitly creates a cursor to iterate over each record in n_roll.
+=For each n_roll record, the code:
+	=Opens the new_records cursor with the roll number from the current n_roll record.
+	=Fetches the data into v_roll and v_name.
+	=Checks if new_records%NOTFOUND (i.e., if no matching roll exists in o_roll):
+		=Inserts the roll and name from n_roll into o_roll and outputs a message indicating an insertion.
+=Otherwise, it skips the record and outputs a message stating that it was skipped because it already exists.
+=Closes the cursor after each iteration.
+
+5.Output:
+
+=Outputs messages for each inserted or skipped record.
+
+Key Takeaways
+=Explicit Cursor (new_records): Used to check if a specific roll number exists in o_roll.
+=Implicit Cursor (FOR loop): Used to iterate over each record in n_roll.
+=Cursor Attributes (%NOTFOUND): Used to detect if the fetch from new_records returned any data.
+
+Example Output (based on the data provided)
+="Inserted Roll No: 4 Name: Dan"
+="Inserted Roll No: 5 Name: Elon"
+="Skipped Roll No: 2 as already exist"
+="Skipped Roll No: 3 as already exist"
+
+This code efficiently updates o_roll with any new records from n_roll, while skipping duplicates.	

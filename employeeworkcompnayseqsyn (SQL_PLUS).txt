@@ -1,0 +1,205 @@
+CODE:
+
+-- Step 1: Create Tables
+CREATE TABLE Employees (
+    person_name VARCHAR(50),
+    street VARCHAR(100),
+    city VARCHAR(50)
+);
+
+CREATE TABLE Works (
+    person_name VARCHAR(50),
+    company_name VARCHAR(50),
+    salary DECIMAL(10, 2)
+);
+
+CREATE TABLE Companies (
+    company_name VARCHAR(50),
+    city VARCHAR(50)
+);
+
+CREATE TABLE Branches (
+    branch_name VARCHAR(50),
+    branch_city VARCHAR(50),
+    assets DECIMAL(15, 2)
+);
+
+CREATE TABLE Customers (
+    customer_name VARCHAR(50),
+    customer_street VARCHAR(100),
+    customer_city VARCHAR(50)
+);
+
+CREATE TABLE Loans (
+    loan_number INT PRIMARY KEY,
+    branch_name VARCHAR(50),
+    amount DECIMAL(15, 2)
+);
+
+CREATE TABLE Borrowers (
+    customer_name VARCHAR(50),
+    loan_number INT,
+    FOREIGN KEY (loan_number) REFERENCES Loans(loan_number)
+);
+
+CREATE TABLE Accounts (
+    account_number INT PRIMARY KEY,
+    branch_name VARCHAR(50),
+    balance DECIMAL(15, 2)
+);
+
+CREATE TABLE Depositors (
+    customer_name VARCHAR(50),
+    account_number INT,
+    FOREIGN KEY (account_number) REFERENCES Accounts(account_number)
+);
+
+-- Step 2: Insert Data into Tables (Ensuring Parent Data First)
+
+-- Insert data into Employees Table
+INSERT INTO Employees (person_name, street, city) VALUES ('John Doe', '123 Elm St', 'New York');
+INSERT INTO Employees (person_name, street, city) VALUES ('Jane Smith', '456 Oak St', 'Los Angeles');
+
+-- Insert data into Works Table
+INSERT INTO Works (person_name, company_name, salary) VALUES ('John Doe', 'TechCorp', 75000);
+INSERT INTO Works (person_name, company_name, salary) VALUES ('Jane Smith', 'HealthInc', 80000);
+
+-- Insert data into Companies Table
+INSERT INTO Companies (company_name, city) VALUES ('TechCorp', 'New York');
+INSERT INTO Companies (company_name, city) VALUES ('HealthInc', 'Los Angeles');
+
+-- Insert data into Branches Table
+INSERT INTO Branches (branch_name, branch_city, assets) VALUES ('MainBranch', 'New York', 1000000);
+INSERT INTO Branches (branch_name, branch_city, assets) VALUES ('WestBranch', 'Los Angeles', 800000);
+
+-- Insert data into Customers Table
+INSERT INTO Customers (customer_name, customer_street, customer_city) VALUES ('Alice Brown', '789 Pine St', 'Chicago');
+INSERT INTO Customers (customer_name, customer_street, customer_city) VALUES ('Bob White', '321 Maple St', 'Houston');
+
+-- Insert data into Loans Table (Parent for Borrowers)
+INSERT INTO Loans (loan_number, branch_name, amount) VALUES (101, 'MainBranch', 50000);
+INSERT INTO Loans (loan_number, branch_name, amount) VALUES (102, 'WestBranch', 30000);
+
+-- Insert data into Accounts Table (Parent for Depositors)
+INSERT INTO Accounts (account_number, branch_name, balance) VALUES (1001, 'MainBranch', 1000);
+INSERT INTO Accounts (account_number, branch_name, balance) VALUES (1002, 'WestBranch', 1500);
+
+-- Insert data into Borrowers Table (Child table referencing Loans)
+INSERT INTO Borrowers (customer_name, loan_number) VALUES ('Alice Brown', 101);
+INSERT INTO Borrowers (customer_name, loan_number) VALUES ('Bob White', 102);
+
+-- Insert data into Depositors Table (Child table referencing Accounts)
+INSERT INTO Depositors (customer_name, account_number) VALUES ('Alice Brown', 1001);
+INSERT INTO Depositors (customer_name, account_number) VALUES ('Bob White', 1002);
+
+-- Step 3: Create View
+-- Create a view that shows customer name and customer street
+CREATE VIEW Customer_View AS
+SELECT customer_name, customer_street
+FROM Customers;
+
+-- Query the view to display the results
+SELECT * FROM Customer_View;
+
+-- Step 4: Create Index for Loan Number
+-- Create an index for the loan_number in the Loans table to improve query performance
+CREATE INDEX loan_number_idx ON Loans(loan_number);
+
+-- Step 5: Create Sequence for Account Number and Insert Records Using Sequence
+-- Create a sequence for generating unique account numbers
+CREATE SEQUENCE account_seq
+START WITH 1003
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+-- Insert 4 records into Accounts table using the sequence
+INSERT INTO Accounts (account_number, branch_name, balance)
+VALUES (account_seq.NEXTVAL, 'MainBranch', 2000);
+
+INSERT INTO Accounts (account_number, branch_name, balance)
+VALUES (account_seq.NEXTVAL, 'WestBranch', 2500);
+
+INSERT INTO Accounts (account_number, branch_name, balance)
+VALUES (account_seq.NEXTVAL, 'MainBranch', 3000);
+
+INSERT INTO Accounts (account_number, branch_name, balance)
+VALUES (account_seq.NEXTVAL, 'WestBranch', 3500);
+
+-- Verify the records inserted
+SELECT * FROM Accounts;
+
+-- Step 6: Create Synonym for Depositors and Borrowers Table
+-- Create synonyms for the Depositors and Borrowers tables
+CREATE SYNONYM dep_synonym FOR Depositors;
+CREATE SYNONYM bor_synonym FOR Borrowers;
+
+-- Query to display records from Depositors using synonym
+SELECT * FROM dep_synonym;
+
+-- Query to display records from Borrowers using synonym
+SELECT * FROM bor_synonym;
+
+-- Step 7: Update Record Using Synonym
+-- Update a record in the Depositors table using the synonym
+UPDATE dep_synonym
+SET account_number = 1003
+WHERE customer_name = 'Alice Brown';
+
+-- Verify the update
+SELECT * FROM Depositors;
+
+-- Step 8: Drop Synonym for Depositors Table
+-- Drop the synonym for Depositors
+DROP SYNONYM dep_synonym;
+
+
+
+
+EXPLANATION:
+
+Sure! Let me elaborate on the key parts of the script to give you a clearer understanding:
+
+### 1. **Create Tables**
+   - The script defines multiple tables to store information related to employees, companies, branches, customers, loans, and accounts. 
+   - **Foreign keys** are used to establish relationships between tables. For example, in the `Borrowers` table, the `loan_number` column is a **foreign key** referencing the `Loans` table to ensure data integrity (i.e., a borrower must have a valid loan). Similarly, `Depositors` references `Accounts` using `account_number`.
+   - **Primary keys** (e.g., `loan_number`, `account_number`) uniquely identify each row in a table.
+
+### 2. **Insert Data**
+   - After creating the tables, the script populates them with sample data using `INSERT INTO` statements.
+   - Data is added in a logical order, starting with the parent tables (`Loans`, `Branches`, etc.) and moving on to the child tables (`Borrowers`, `Depositors`). This ensures that the foreign key constraints are not violated. For example, you must have a valid loan in the `Loans` table before adding a corresponding borrower in the `Borrowers` table.
+
+### 3. **Create View**
+   - A **view** (`Customer_View`) is created to simplify access to specific columns of the `Customers` table. The view shows only the `customer_name` and `customer_street` from the `Customers` table. This abstraction hides unnecessary columns, making it easier to query the table for specific information.
+   - **Querying a view** is similar to querying a table, but since it’s an abstraction layer, you can easily modify the underlying table without affecting how the data is accessed through the view.
+
+### 4. **Create Index**
+   - An **index** is created on the `loan_number` column in the `Loans` table. Indexes speed up searches on specific columns. In this case, queries searching for a particular loan number will be faster because of the index.
+   - The index is especially helpful when there is a large volume of records in the `Loans` table.
+
+### 5. **Create Sequence and Insert Records Using Sequence**
+   - A **sequence** named `account_seq` is created to generate unique account numbers automatically. Sequences are useful for generating unique identifiers when inserting records, particularly for primary keys.
+   - The sequence starts at `1003` and increments by `1`. Each time an account is inserted, the next value of the sequence (`account_seq.NEXTVAL`) is used for the `account_number`.
+   - Four records are inserted into the `Accounts` table using the sequence, ensuring each record has a unique `account_number`.
+
+### 6. **Create Synonyms**
+   - **Synonyms** are created for the `Depositors` and `Borrowers` tables, named `dep_synonym` and `bor_synonym`, respectively. A synonym is essentially an alias for a table or view.
+   - Synonyms provide a way to simplify access to tables, especially if they are in different schemas or if you want a simpler name for frequently accessed tables.
+
+### 7. **Update Using Synonym**
+   - The script demonstrates that you can perform **DML operations** (like `UPDATE`) using synonyms. 
+   - Here, the record in `Depositors` is updated using the synonym `dep_synonym`. The update changes the `account_number` for `Alice Brown` to `1003`, demonstrating that synonyms can be used just like the original table names for modifying data.
+
+### 8. **Drop Synonym**
+   - Finally, the **synonym for the `Depositors` table** (`dep_synonym`) is dropped using the `DROP SYNONYM` command. This removes the alias for the table. Dropping the synonym does not affect the original `Depositors` table—only the alias is removed.
+
+---
+
+### **Why are these operations important?**
+- **Tables** form the foundation of relational databases. They organize data into rows and columns, with relationships established between them through **foreign keys**.
+- **Views** provide a flexible way to query data and present it in a simplified or customized manner, which can be useful for reporting or abstraction purposes.
+- **Indexes** make data retrieval faster, especially for large datasets, by allowing the database engine to quickly locate the required rows.
+- **Sequences** ensure that unique values are generated automatically, preventing conflicts in primary keys.
+- **Synonyms** provide a convenient way to reference tables, making the code cleaner or simplifying access, especially across different schemas.
+
+By creating these SQL objects, the script manages and manipulates relational data efficiently, allowing for easy querying, updates, and retrieval of important information.

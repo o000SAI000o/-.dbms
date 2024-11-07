@@ -1,0 +1,360 @@
+CODE:
+
+-- Creating the Person Table
+CREATE TABLE Person (
+    driver_id INT PRIMARY KEY,
+    name VARCHAR(50),
+    address VARCHAR(100)
+);
+
+-- Creating the Car Table
+CREATE TABLE Car (
+    license VARCHAR(20) PRIMARY KEY,
+    model VARCHAR(50),
+    year INT
+);
+
+-- Creating the Accident Table
+CREATE TABLE Accident (
+    report_no INT PRIMARY KEY,
+    date_acc DATE,
+    location VARCHAR(100)
+);
+
+-- Creating the Owns Table
+CREATE TABLE Owns (
+    driver_id INT,
+    license VARCHAR(20),
+    PRIMARY KEY (driver_id, license),
+    FOREIGN KEY (driver_id) REFERENCES Person(driver_id),
+    FOREIGN KEY (license) REFERENCES Car(license)
+);
+
+-- Creating the Participated Table
+CREATE TABLE Participated (
+    driver_id INT,
+    license VARCHAR(20),
+    report_no INT,
+    damage_amount DECIMAL(10, 2),
+    PRIMARY KEY (driver_id, license, report_no),
+    FOREIGN KEY (driver_id) REFERENCES Person(driver_id),
+    FOREIGN KEY (license) REFERENCES Car(license),
+    FOREIGN KEY (report_no) REFERENCES Accident(report_no)
+);
+
+-- Creating the Employee Table
+CREATE TABLE Employee (
+    employee_name VARCHAR(50) PRIMARY KEY,
+    street VARCHAR(100),
+    city VARCHAR(50)
+);
+
+-- Creating the Company Table
+CREATE TABLE Company (
+    company_name VARCHAR(50) PRIMARY KEY,
+    city VARCHAR(50)
+);
+
+-- Creating the Works Table
+CREATE TABLE Works (
+    employee_name VARCHAR(50),
+    company_name VARCHAR(50),
+    salary DECIMAL(10, 2),
+    PRIMARY KEY (employee_name, company_name),
+    FOREIGN KEY (employee_name) REFERENCES Employee(employee_name),
+    FOREIGN KEY (company_name) REFERENCES Company(company_name)
+);
+
+-- Creating the Manages Table
+CREATE TABLE Manages (
+    employee_name VARCHAR(50),
+    manager_name VARCHAR(50),
+    PRIMARY KEY (employee_name, manager_name),
+    FOREIGN KEY (employee_name) REFERENCES Employee(employee_name),
+    FOREIGN KEY (manager_name) REFERENCES Employee(employee_name)
+);
+
+-- Inserting into Person Table
+INSERT INTO Person (driver_id, name, address) VALUES (1, 'John Doe', '123 Main St, New York');
+INSERT INTO Person (driver_id, name, address) VALUES (2, 'Jane Smith', '456 Oak St, Los Angeles');
+INSERT INTO Person (driver_id, name, address) VALUES (3, 'Robert Brown', '789 Pine St, Chicago');
+INSERT INTO Person (driver_id, name, address) VALUES (4, 'Emily Davis', '101 Maple St, Houston');
+
+-- Inserting into Car Table
+INSERT INTO Car (license, model, year) VALUES ('ABC123', 'Sedan', 2018);
+INSERT INTO Car (license, model, year) VALUES ('XYZ456', 'SUV', 2020);
+INSERT INTO Car (license, model, year) VALUES ('LMN789', 'Coupe', 2019);
+INSERT INTO Car (license, model, year) VALUES ('DEF012', 'Hatchback', 2017);
+
+-- Inserting into Accident Table
+INSERT INTO Accident (report_no, date_acc, location) VALUES (1001, TO_DATE('2024-01-15', 'YYYY-MM-DD'), 'New York');
+INSERT INTO Accident (report_no, date_acc, location) VALUES (1002, TO_DATE('2024-02-20', 'YYYY-MM-DD'), 'Los Angeles');
+INSERT INTO Accident (report_no, date_acc, location) VALUES (1003, TO_DATE('2024-03-10', 'YYYY-MM-DD'), 'Chicago');
+INSERT INTO Accident (report_no, date_acc, location) VALUES (1004, TO_DATE('2024-04-25', 'YYYY-MM-DD'), 'Houston');
+
+-- Inserting into Owns Table
+INSERT INTO Owns (driver_id, license) VALUES (1, 'ABC123');
+INSERT INTO Owns (driver_id, license) VALUES (2, 'XYZ456');
+INSERT INTO Owns (driver_id, license) VALUES (3, 'LMN789');
+INSERT INTO Owns (driver_id, license) VALUES (4, 'DEF012');
+
+-- Inserting into Participated Table
+INSERT INTO Participated (driver_id, license, report_no, damage_amount) VALUES (1, 'ABC123', 1001, 1500);
+INSERT INTO Participated (driver_id, license, report_no, damage_amount) VALUES (2, 'XYZ456', 1002, 2000);
+INSERT INTO Participated (driver_id, license, report_no, damage_amount) VALUES (3, 'LMN789', 1003, 1200);
+INSERT INTO Participated (driver_id, license, report_no, damage_amount) VALUES (4, 'DEF012', 1004, 800);
+
+-- Inserting into Employee Table
+INSERT INTO Employee (employee_name, street, city) VALUES ('Alice Johnson', '22 Oak St', 'San Francisco');
+INSERT INTO Employee (employee_name, street, city) VALUES ('Bob Lee', '33 Pine St', 'Dallas');
+INSERT INTO Employee (employee_name, street, city) VALUES ('Charlie Brown', '44 Elm St', 'Miami');
+INSERT INTO Employee (employee_name, street, city) VALUES ('Diana White', '55 Maple St', 'Seattle');
+
+-- Inserting into Company Table
+INSERT INTO Company (company_name, city) VALUES ('TechCorp', 'San Francisco');
+INSERT INTO Company (company_name, city) VALUES ('HealthInc', 'Dallas');
+INSERT INTO Company (company_name, city) VALUES ('AutoWorks', 'Miami');
+INSERT INTO Company (company_name, city) VALUES ('WebSolutions', 'Seattle');
+
+-- Inserting into Works Table
+INSERT INTO Works (employee_name, company_name, salary) VALUES ('Alice Johnson', 'TechCorp', 95000);
+INSERT INTO Works (employee_name, company_name, salary) VALUES ('Bob Lee', 'HealthInc', 80000);
+INSERT INTO Works (employee_name, company_name, salary) VALUES ('Charlie Brown', 'AutoWorks', 85000);
+INSERT INTO Works (employee_name, company_name, salary) VALUES ('Diana White', 'WebSolutions', 90000);
+
+-- Inserting into Manages Table
+INSERT INTO Manages (employee_name, manager_name) VALUES ('Alice Johnson', 'Bob Lee');
+INSERT INTO Manages (employee_name, manager_name) VALUES ('Charlie Brown', 'Diana White');
+
+-- Creating View
+CREATE VIEW Employee_Company_View AS
+SELECT employee_name, company_name
+FROM Works;
+
+-- Viewing the Results
+SELECT * FROM Employee_Company_View;
+
+-- Creating Indexes
+CREATE INDEX works_employee_name_idx ON Works(employee_name);
+CREATE INDEX participated_driver_report_idx ON Participated(driver_id, report_no);
+
+-- Creating Sequences
+CREATE SEQUENCE person_seq
+START WITH 100
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+-- Inserting with Sequence
+INSERT INTO Person (driver_id, name, address) 
+VALUES (person_seq.NEXTVAL, 'Eva Green', '111 Birch St, Austin');
+
+INSERT INTO Person (driver_id, name, address) 
+VALUES (person_seq.NEXTVAL, 'Frank Harris', '123 Cedar St, Denver');
+
+-- Creating Synonyms
+CREATE SYNONYM participated_syn FOR Participated;
+CREATE SYNONYM company_syn FOR Company;
+
+-- Querying Using Synonyms
+SELECT * FROM participated_syn;
+SELECT * FROM company_syn;
+
+-- Updating Using Synonym
+UPDATE participated_syn 
+SET damage_amount = 1800 
+WHERE driver_id = 2 AND report_no = 1002;
+
+SELECT * FROM participated_syn WHERE driver_id = 2 AND report_no = 1002;
+
+-- Dropping Index
+DROP INDEX works_employee_name_idx;
+
+
+
+
+EXPLANATION:
+
+
+The SQL code you provided is structured to create a database schema that includes several entities such as people, cars, accidents, employees, companies, and more. Here's a breakdown of each section and what it does:
+
+### 1. **Creating Tables:**
+   The code creates multiple tables to store information related to cars, people, accidents, employees, and companies.
+
+   #### a. **Person Table:**
+   ```sql
+   CREATE TABLE Person (
+       driver_id INT PRIMARY KEY,
+       name VARCHAR(50),
+       address VARCHAR(100)
+   );
+   ```
+   - This table stores details about people (drivers). 
+   - The `driver_id` is the unique identifier (primary key) for each person, ensuring no duplicate drivers.
+   - Each person has a `name` and `address`.
+
+   #### b. **Car Table:**
+   ```sql
+   CREATE TABLE Car (
+       license VARCHAR(20) PRIMARY KEY,
+       model VARCHAR(50),
+       year INT
+   );
+   ```
+   - This table stores details about cars, such as their `license` plate number (which is unique and the primary key), `model`, and the `year` of the car.
+
+   #### c. **Accident Table:**
+   ```sql
+   CREATE TABLE Accident (
+       report_no INT PRIMARY KEY,
+       date_acc DATE,
+       location VARCHAR(100)
+   );
+   ```
+   - This table stores information about accidents.
+   - `report_no` is the unique identifier for each accident (primary key).
+   - `date_acc` stores the date of the accident, and `location` indicates where the accident took place.
+
+   #### d. **Owns Table:**
+   ```sql
+   CREATE TABLE Owns (
+       driver_id INT,
+       license VARCHAR(20),
+       PRIMARY KEY (driver_id, license),
+       FOREIGN KEY (driver_id) REFERENCES Person(driver_id),
+       FOREIGN KEY (license) REFERENCES Car(license)
+   );
+   ```
+   - This table stores the relationship between people and the cars they own.
+   - The primary key is a combination of `driver_id` and `license`.
+   - The `FOREIGN KEY` constraints ensure that a `driver_id` must exist in the `Person` table, and `license` must exist in the `Car` table.
+
+   #### e. **Participated Table:**
+   ```sql
+   CREATE TABLE Participated (
+       driver_id INT,
+       license VARCHAR(20),
+       report_no INT,
+       damage_amount DECIMAL(10, 2),
+       PRIMARY KEY (driver_id, license, report_no),
+       FOREIGN KEY (driver_id) REFERENCES Person(driver_id),
+       FOREIGN KEY (license) REFERENCES Car(license),
+       FOREIGN KEY (report_no) REFERENCES Accident(report_no)
+   );
+   ```
+   - This table tracks which people and cars were involved in accidents.
+   - It includes `driver_id`, `license`, and `report_no` as a composite primary key to ensure each participation record is unique.
+   - `FOREIGN KEY` constraints link to the `Person`, `Car`, and `Accident` tables, ensuring that each participation entry references valid drivers, cars, and accident reports.
+
+   #### f. **Employee Table:**
+   ```sql
+   CREATE TABLE Employee (
+       employee_name VARCHAR(50) PRIMARY KEY,
+       street VARCHAR(100),
+       city VARCHAR(50)
+   );
+   ```
+   - This table stores employee details such as `employee_name`, `street`, and `city`.
+   - The `employee_name` serves as the unique primary key.
+
+   #### g. **Company Table:**
+   ```sql
+   CREATE TABLE Company (
+       company_name VARCHAR(50) PRIMARY KEY,
+       city VARCHAR(50)
+   );
+   ```
+   - This table stores information about companies, including `company_name` (the primary key) and the `city` they are located in.
+
+   #### h. **Works Table:**
+   ```sql
+   CREATE TABLE Works (
+       employee_name VARCHAR(50),
+       company_name VARCHAR(50),
+       salary DECIMAL(10, 2),
+       PRIMARY KEY (employee_name, company_name),
+       FOREIGN KEY (employee_name) REFERENCES Employee(employee_name),
+       FOREIGN KEY (company_name) REFERENCES Company(company_name)
+   );
+   ```
+   - This table captures the relationship between employees and the companies they work for, along with their `salary`.
+   - The `PRIMARY KEY` is a composite of `employee_name` and `company_name`, ensuring no duplicate work entries.
+   - Foreign keys link `employee_name` to the `Employee` table and `company_name` to the `Company` table.
+
+   #### i. **Manages Table:**
+   ```sql
+   CREATE TABLE Manages (
+       employee_name VARCHAR(50),
+       manager_name VARCHAR(50),
+       PRIMARY KEY (employee_name, manager_name),
+       FOREIGN KEY (employee_name) REFERENCES Employee(employee_name),
+       FOREIGN KEY (manager_name) REFERENCES Employee(employee_name)
+   );
+   ```
+   - This table tracks which employees are managed by other employees.
+   - It has a composite primary key of `employee_name` and `manager_name`.
+   - The foreign keys ensure that both `employee_name` and `manager_name` must be valid employees in the `Employee` table.
+
+### 2. **Inserting Data:**
+The `INSERT INTO` statements populate the tables with sample data.
+
+- **Person**: Adds driver details such as John Doe, Jane Smith, etc.
+- **Car**: Adds cars with specific license plates, models, and years.
+- **Accident**: Inserts records for accidents with report numbers, dates, and locations.
+- **Owns**: Links drivers to the cars they own.
+- **Participated**: Links drivers and cars to the accidents they participated in, along with the damage amount.
+
+### 3. **Creating Views:**
+```sql
+CREATE VIEW Employee_Company_View AS
+SELECT employee_name, company_name
+FROM Works;
+```
+- This creates a view called `Employee_Company_View` that shows which employees work for which companies.
+- The `VIEW` makes it easier to query this information without directly accessing the underlying tables.
+
+### 4. **Creating Indexes:**
+```sql
+CREATE INDEX works_employee_name_idx ON Works(employee_name);
+CREATE INDEX participated_driver_report_idx ON Participated(driver_id, report_no);
+```
+- Indexes are created on the `Works` table (based on `employee_name`) and the `Participated` table (based on `driver_id` and `report_no`) to improve query performance for frequent searches on these columns.
+
+### 5. **Creating Sequences:**
+```sql
+CREATE SEQUENCE person_seq
+START WITH 100
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+```
+- This sequence generates unique numbers starting from 100. It can be used to automatically generate `driver_id` values in the `Person` table.
+  
+```sql
+INSERT INTO Person (driver_id, name, address)
+VALUES (person_seq.NEXTVAL, 'Eva Green', '111 Birch St, Austin');
+```
+- This inserts a new driver with a `driver_id` automatically assigned by the sequence.
+
+### 6. **Creating Synonyms:**
+```sql
+CREATE SYNONYM participated_syn FOR Participated;
+CREATE SYNONYM company_syn FOR Company;
+```
+- Synonyms are created for the `Participated` and `Company` tables to provide alternative names for querying them. For example, `participated_syn` can be used instead of `Participated`.
+
+### 7. **Querying and Updating with Synonyms:**
+```sql
+SELECT * FROM participated_syn;
+UPDATE participated_syn SET damage_amount = 1800 WHERE driver_id = 2 AND report_no = 1002;
+```
+- These queries demonstrate how to use the synonyms to query and update data in the `Participated` table.
+
+### 8. **Dropping an Index:**
+```sql
+DROP INDEX works_employee_name_idx;
+```
+- This drops the index created earlier on the `employee_name` column in the `Works` table.
+
+### Conclusion:
+The code sets up a relational database with tables for people, cars, accidents, companies, employees, and relationships between them. It also demonstrates the use of views, indexes, sequences, and synonyms to enhance data management and querying.

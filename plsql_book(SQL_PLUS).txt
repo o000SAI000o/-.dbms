@@ -1,0 +1,281 @@
+
+
+1.................................Create Tables Borrower...................................
+
+*CODE*:
+
+-- Creating the Borrower table
+CREATE TABLE Borrower (
+    Roll_no       NUMBER PRIMARY KEY,
+    Name          VARCHAR2(50),
+    DateofIssue   DATE,
+    NameofBook    VARCHAR2(100),
+    Status        CHAR(1) CHECK (Status IN ('I', 'R')) -- 'I' for Issued, 'R' for Returned
+);
+
+
+2.................................Create Tables Fine.......................................
+
+*CODE*:
+
+-- Creating the Fine table with corrected column name for Date
+CREATE TABLE Fine (
+    Roll_no       NUMBER,
+    FineDate      DATE,   -- Changed from Date to FineDate to avoid using reserved word
+    Amt           NUMBER,
+    CONSTRAINT fk_roll_no FOREIGN KEY (Roll_no) REFERENCES Borrower(Roll_no)
+);
+
+3.................................Insert values............................................
+
+*CODE*:
+
+-- Inserting sample data into the Borrower table
+INSERT INTO Borrower (Roll_no, Name, DateofIssue, NameofBook, Status) 
+VALUES (12, 'Vishwa', TO_DATE('2024-10-01', 'YYYY-MM-DD'), 'Data Science Handbook', 'I');
+
+INSERT INTO Borrower (Roll_no, Name, DateofIssue, NameofBook, Status) 
+VALUES (15, 'Krushna', TO_DATE('2024-10-10', 'YYYY-MM-DD'), 'Machine Learning Basics', 'I');
+
+INSERT INTO Borrower (Roll_no, Name, DateofIssue, NameofBook, Status) 
+VALUES (29, 'Yash', TO_DATE('2024-10-20', 'YYYY-MM-DD'), 'Deep Learning Guide', 'I');
+
+4......................................PL/SQL CODE........................................
+
+*CODE*:
+
+DECLARE
+    -- Variable declarations
+    v_roll_no   Borrower.Roll_no%TYPE := &Roll_no;           -- Prompt once for Roll_no
+    v_nameofbook Borrower.NameofBook%TYPE := '&NameofBook';  -- Prompt once for NameofBook
+    v_dateofissue Borrower.DateofIssue%TYPE;
+    v_days_late NUMBER;
+    v_fine_amt  NUMBER := 0;
+
+    -- Named exception declaration
+    e_no_record_found EXCEPTION;
+
+BEGIN
+    -- Retrieve the DateofIssue for the given Roll_no and NameofBook
+    SELECT DateofIssue
+    INTO v_dateofissue
+    FROM Borrower
+    WHERE Roll_no = v_roll_no
+      AND NameofBook = v_nameofbook;
+
+    -- Calculate the number of days since the book was issued
+    v_days_late := TRUNC(SYSDATE - v_dateofissue);
+
+    -- Determine fine amount based on the number of days late
+    IF v_days_late BETWEEN 15 AND 30 THEN
+        v_fine_amt := v_days_late * 5;
+    ELSIF v_days_late > 30 THEN
+        v_fine_amt := (30 * 5) + ((v_days_late - 30) * 50);
+    ELSE
+        v_fine_amt := 0; -- No fine for days less than 15
+    END IF;
+
+    -- Update the book status to 'R' if the book is returned
+    UPDATE Borrower
+    SET Status = 'R'
+    WHERE Roll_no = v_roll_no
+      AND NameofBook = v_nameofbook;
+
+    -- If there is a fine, insert a record in the Fine table
+    IF v_fine_amt > 0 THEN
+        INSERT INTO Fine (Roll_no, FineDate, Amt)
+        VALUES (v_roll_no, SYSDATE, v_fine_amt);
+    END IF;
+
+    -- Success message
+    DBMS_OUTPUT.PUT_LINE('Book returned successfully. Fine amount: ' || v_fine_amt);
+
+EXCEPTION
+    -- Handle case where no record is found
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('No record found for given Roll_no and NameofBook.');
+
+    -- Handle other exceptions
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('An unexpected error occurred: ' || SQLERRM);
+
+END;
+/
+
+*NOTE*:
+
+Example Scenarios
+Input Roll_no = 12 and NameofBook = 'Data Science Handbook', issued 40 days ago:
+
+Fine = 650 (30 days at Rs. 5 + 10 days at Rs. 50)
+Output:
+mathematica
+Copy code
+Book returned successfully. Fine amount: 500
+Input Roll_no = 15 and NameofBook = 'Machine Learning Basics', issued 10 days ago:
+
+No fine as it's less than 15 days.
+Output:
+mathematica
+Copy code
+Book returned successfully. Fine amount: 90
+Input Roll_no = 29 and NameofBook = 'Deep Learning Guide':
+
+No matching record, so NO_DATA_FOUND exception.
+Output:
+csharp
+Copy code
+No record found for given Roll_no and NameofBook.
+This summary should cover the main outcomes you’d see when running the PL/SQL block.
+
+EXPLANATION:
+
+This code involves several parts: creating tables, inserting data, and implementing a PL/SQL block to manage book borrowing, fines, and updates.
+
+### 1. **Creating the Borrower Table**
+```sql
+CREATE TABLE Borrower (
+    Roll_no       NUMBER PRIMARY KEY,
+    Name          VARCHAR2(50),
+    DateofIssue   DATE,
+    NameofBook    VARCHAR2(100),
+    Status        CHAR(1) CHECK (Status IN ('I', 'R')) -- 'I' for Issued, 'R' for Returned
+);
+```
+- **Purpose**: This table stores details about book borrowers.
+- **Columns**:
+  - `Roll_no`: A unique number for each borrower (Primary Key).
+  - `Name`: Name of the borrower.
+  - `DateofIssue`: The date the book was issued.
+  - `NameofBook`: The name of the borrowed book.
+  - `Status`: A character column indicating whether the book is 'I' (Issued) or 'R' (Returned). A `CHECK` constraint ensures that only these values are valid.
+
+### 2. **Creating the Fine Table**
+```sql
+CREATE TABLE Fine (
+    Roll_no       NUMBER,
+    FineDate      DATE,   -- Changed from Date to FineDate to avoid using reserved word
+    Amt           NUMBER,
+    CONSTRAINT fk_roll_no FOREIGN KEY (Roll_no) REFERENCES Borrower(Roll_no)
+);
+```
+- **Purpose**: This table stores information about fines for overdue books.
+- **Columns**:
+  - `Roll_no`: The borrower's ID, referencing the `Roll_no` in the `Borrower` table.
+  - `FineDate`: The date the fine was imposed.
+  - `Amt`: The amount of the fine.
+  - A `FOREIGN KEY` constraint ensures that the `Roll_no` in the `Fine` table must match a `Roll_no` in the `Borrower` table.
+
+### 3. **Inserting Sample Data**
+```sql
+-- Inserting sample data into the Borrower table
+INSERT INTO Borrower (Roll_no, Name, DateofIssue, NameofBook, Status) 
+VALUES (12, 'Vishwa', TO_DATE('2024-10-01', 'YYYY-MM-DD'), 'Data Science Handbook', 'I');
+
+INSERT INTO Borrower (Roll_no, Name, DateofIssue, NameofBook, Status) 
+VALUES (15, 'Krushna', TO_DATE('2024-10-10', 'YYYY-MM-DD'), 'Machine Learning Basics', 'I');
+
+INSERT INTO Borrower (Roll_no, Name, DateofIssue, NameofBook, Status) 
+VALUES (29, 'Yash', TO_DATE('2024-10-20', 'YYYY-MM-DD'), 'Deep Learning Guide', 'I');
+```
+- **Purpose**: Inserts sample data into the `Borrower` table.
+- Each `INSERT` statement adds a record for a borrower, including their `Roll_no`, `Name`, `DateofIssue`, `NameofBook`, and `Status`.
+
+### 4. **PL/SQL Code to Calculate Fines and Return Books**
+```sql
+DECLARE
+    -- Variable declarations
+    v_roll_no   Borrower.Roll_no%TYPE := &Roll_no;           -- Prompt once for Roll_no
+    v_nameofbook Borrower.NameofBook%TYPE := '&NameofBook';  -- Prompt once for NameofBook
+    v_dateofissue Borrower.DateofIssue%TYPE;
+    v_days_late NUMBER;
+    v_fine_amt  NUMBER := 0;
+
+    -- Named exception declaration
+    e_no_record_found EXCEPTION;
+
+BEGIN
+    -- Retrieve the DateofIssue for the given Roll_no and NameofBook
+    SELECT DateofIssue
+    INTO v_dateofissue
+    FROM Borrower
+    WHERE Roll_no = v_roll_no
+      AND NameofBook = v_nameofbook;
+
+    -- Calculate the number of days since the book was issued
+    v_days_late := TRUNC(SYSDATE - v_dateofissue);
+
+    -- Determine fine amount based on the number of days late
+    IF v_days_late BETWEEN 15 AND 30 THEN
+        v_fine_amt := v_days_late * 5;
+    ELSIF v_days_late > 30 THEN
+        v_fine_amt := (30 * 5) + ((v_days_late - 30) * 50);
+    ELSE
+        v_fine_amt := 0; -- No fine for days less than 15
+    END IF;
+
+    -- Update the book status to 'R' if the book is returned
+    UPDATE Borrower
+    SET Status = 'R'
+    WHERE Roll_no = v_roll_no
+      AND NameofBook = v_nameofbook;
+
+    -- If there is a fine, insert a record in the Fine table
+    IF v_fine_amt > 0 THEN
+        INSERT INTO Fine (Roll_no, FineDate, Amt)
+        VALUES (v_roll_no, SYSDATE, v_fine_amt);
+    END IF;
+
+    -- Success message
+    DBMS_OUTPUT.PUT_LINE('Book returned successfully. Fine amount: ' || v_fine_amt);
+
+EXCEPTION
+    -- Handle case where no record is found
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('No record found for given Roll_no and NameofBook.');
+
+    -- Handle other exceptions
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('An unexpected error occurred: ' || SQLERRM);
+
+END;
+```
+- **Purpose**: This PL/SQL block handles the return of books, calculates fines for late returns, and updates the database.
+  
+- **Steps**:
+  1. **Variable Declarations**: 
+     - `v_roll_no`: The borrower's roll number.
+     - `v_nameofbook`: The name of the borrowed book.
+     - `v_dateofissue`: The date the book was issued.
+     - `v_days_late`: The number of days the book is overdue.
+     - `v_fine_amt`: The fine to be calculated.
+  
+  2. **Fetching Data**: 
+     - The `SELECT` statement retrieves the `DateofIssue` of the specified book based on the `Roll_no` and `NameofBook`.
+  
+  3. **Calculating the Fine**:
+     - If the book is between 15 and 30 days overdue, the fine is `5` per day.
+     - If the book is more than 30 days overdue, the fine is calculated as `(30 * 5) + ((days - 30) * 50)`.
+     - If the book is returned within 15 days, no fine is charged.
+
+  4. **Updating the Book Status**: 
+     - The book status is updated to 'R' (Returned) after the fine is calculated.
+
+  5. **Inserting the Fine**:
+     - If there is any fine, an entry is added to the `Fine` table with the `Roll_no`, current date (`SYSDATE`), and fine amount.
+
+  6. **Exceptions**:
+     - If no matching record is found (`NO_DATA_FOUND`), an error message is displayed.
+     - Any other unexpected errors are caught using `WHEN OTHERS`.
+
+### Summary
+- **Table Creation**: The `Borrower` and `Fine` tables are created to store information about the borrowers, books, and fines.
+- **Data Insertion**: Sample records are inserted into the `Borrower` table to simulate borrowing activities.
+- **PL/SQL Block**: A PL/SQL block is written to:
+  1. Fetch details of the book borrowed by a specific student.
+  2. Calculate fines based on overdue days.
+  3. Update the status of the borrowed book to 'Returned'.
+  4. Insert fine records into the `Fine` table if applicable.
+  5. Handle errors gracefully with exception handling.
+
+Let me know if you'd like any further clarification!

@@ -1,0 +1,133 @@
+CODE:
+
+CREATE DATABASE my_database;
+USE my_database;
+
+USE my_database;
+
+CREATE TABLE old_data (
+    roll INT,
+    name VARCHAR(20)
+);
+
+CREATE TABLE new_data (
+    roll INT,
+    name VARCHAR(20)
+);
+
+INSERT INTO old_data VALUES(1, 'ABC');
+INSERT INTO old_data VALUES(2, 'PQR');
+INSERT INTO old_data VALUES(3, 'LMN');
+INSERT INTO old_data VALUES(4, 'XYZ');
+
+INSERT INTO new_data VALUES(3, 'Krushna');
+INSERT INTO new_data VALUES(4, 'Yash');
+INSERT INTO new_data VALUES(5, 'Vishwa');
+INSERT INTO new_data VALUES(6, 'Alok');
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS roll_list$$
+
+CREATE PROCEDURE roll_list()
+BEGIN
+    DECLARE oldRollNo INT;
+    DECLARE newRollNo INT;
+    DECLARE oldName VARCHAR(20);
+    DECLARE newName VARCHAR(20);
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE c1 CURSOR FOR SELECT roll, name FROM old_data;
+    DECLARE c2 CURSOR FOR SELECT roll, name FROM new_data;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    
+    OPEN c2;
+    
+    loop1: LOOP
+        FETCH c2 INTO newRollNo, newName;
+        IF done THEN
+            LEAVE loop1;
+        END IF;
+        
+        SET done = FALSE;
+        
+        OPEN c1;
+        
+        loop2: LOOP
+            FETCH c1 INTO oldRollNo, oldName;
+            IF done THEN
+                LEAVE loop2;
+            END IF;
+
+            IF oldRollNo = newRollNo THEN
+                LEAVE loop2;
+            END IF;
+        END LOOP;
+
+        IF done THEN
+            INSERT INTO old_data (roll, name) VALUES (newRollNo, newName);
+        END IF;
+
+        CLOSE c1;
+    END LOOP;
+
+    CLOSE c2;
+
+END$$
+
+DELIMITER ;
+
+/*call*/
+CALL roll_list();
+
+/*verify results*/
+SELECT * FROM old_data;
+
+
+EXPLANATION:
+Sure! Here's a concise explanation of the code:
+
+### Purpose:
+The code is a MySQL stored procedure that checks records in the `new_data` table and inserts them into the `old_data` table if they don't already exist in `old_data` based on the `roll` number.
+
+### Step-by-step Explanation:
+
+1. **Procedure Creation**:
+   - The procedure is named `roll_list` and is created with `CREATE PROCEDURE` and `DROP PROCEDURE IF EXISTS` to avoid errors if the procedure already exists.
+
+2. **Variable Declarations**:
+   - Variables are declared to hold the values of `roll` and `name` for both tables (`old_data` and `new_data`).
+   - `done` is a flag to control the flow when there are no more records to fetch.
+   - Two cursors (`c1` and `c2`) are declared to select records from `old_data` and `new_data` respectively.
+
+3. **Cursor Declaration**:
+   - `c1` and `c2` are used to iterate over `old_data` and `new_data`.
+   - `c1`: Loops through `old_data` to find a matching `roll` number.
+   - `c2`: Loops through `new_data` to find records that need to be inserted into `old_data`.
+
+4. **Handlers**:
+   - A `CONTINUE HANDLER FOR NOT FOUND` is declared to set the `done` flag to `TRUE` when there are no more records to fetch from the cursors.
+
+5. **Outer Loop (`loop1`)**:
+   - This loop fetches records from `new_data` using cursor `c2`.
+   - For each record in `new_data`, it checks if it exists in `old_data` by comparing `roll` numbers using the inner loop (`loop2`).
+
+6. **Inner Loop (`loop2`)**:
+   - This loop fetches records from `old_data` using cursor `c1`.
+   - It compares `roll` numbers from both `old_data` and `new_data`.
+   - If a matching `roll` number is found, it breaks out of the loop.
+
+7. **Insert Missing Data**:
+   - If no match is found (i.e., `done` flag is `TRUE` after the inner loop), it inserts the record from `new_data` into `old_data`.
+
+8. **Closing Cursors**:
+   - After each loop, cursors `c1` and `c2` are closed to free up resources.
+
+### Final Outcome:
+- The procedure adds records from `new_data` to `old_data` only if they don't already exist in `old_data`, based on the `roll` number.
+
+### Key Concepts:
+- **Cursors**: Used to loop over rows from both tables.
+- **Handlers**: Used to manage control flow when no more records are found in a cursor.
+- **Looping**: Inner and outer loops to compare records and insert missing ones.
+
+Let me know if you need more details or further clarification!

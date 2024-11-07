@@ -1,0 +1,98 @@
+CODE:
+
+MAP-REDUCE
+
+use employee;
+
+db.computer.insertMany([
+    { _id: 1, name: "Alice", position: "Developer", salary: 80000 },
+    { _id: 2, name: "Bob", position: "Designer", salary: 70000 },
+    { _id: 3, name: "Charlie", position: "Manager", salary: 90000 },
+    { _id: 4, name: "David", position: "Developer", salary: 85000 },
+    { _id: 5, name: "Eva", position: "Analyst", salary: 75000 }
+]);
+
+
+var mapFunction = function() {
+    emit("total", this.salary);
+};
+
+
+var reduceFunction = function(key, values) {
+    return Array.sum(values);
+};
+
+
+db.computer.aggregate([
+    {
+        $group: {
+            _id: "total",  // Grouping by a fixed ID to aggregate all documents together
+            totalSalary: { $sum: "$salary" }  // Summing up the Salary field
+        }
+    },
+    {
+        $out: "salary_totals"  // Store the results in a new collection called "salary_totals"
+    }
+]);
+
+
+
+db.salary_totals.find().pretty();
+
+
+EXPLANATION:
+
+Here's a short and precise explanation of the code:
+
+### 1. **Data Insertion**:
+Inserts employee records into the `computer` collection in the `employee` database.
+
+```javascript
+use employee;
+
+db.computer.insertMany([
+    { _id: 1, name: "Alice", position: "Developer", salary: 80000 },
+    { _id: 2, name: "Bob", position: "Designer", salary: 70000 },
+    { _id: 3, name: "Charlie", position: "Manager", salary: 90000 },
+    { _id: 4, name: "David", position: "Developer", salary: 85000 },
+    { _id: 5, name: "Eva", position: "Analyst", salary: 75000 }
+]);
+```
+
+### 2. **Map Function**:
+Emits the total salary from each employee record.
+
+```javascript
+var mapFunction = function() {
+    emit("total", this.salary);
+};
+```
+
+### 3. **Reduce Function**:
+Sums all emitted salary values.
+
+```javascript
+var reduceFunction = function(key, values) {
+    return Array.sum(values);
+};
+```
+
+### 4. **Aggregation**:
+Groups by the fixed `"total"` key and sums up the `salary` field. The result is saved in `salary_totals`.
+
+```javascript
+db.computer.aggregate([
+    { $group: { _id: "total", totalSalary: { $sum: "$salary" } } },
+    { $out: "salary_totals" }
+]);
+```
+
+### 5. **View Results**:
+Displays the total salary stored in `salary_totals`.
+
+```javascript
+db.salary_totals.find().pretty();
+```
+
+### Expected Output:
+The `salary_totals` collection will contain the sum of all salaries, e.g., `{ "_id": "total", "totalSalary": 410000 }`.

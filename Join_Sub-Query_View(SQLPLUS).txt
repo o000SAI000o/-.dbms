@@ -1,0 +1,257 @@
+CODE:
+
+CREATE DATABASE ASSIGN1;
+USE ASSIGN1;
+
+CREATE TABLE Employee (
+    employee_name VARCHAR2(50) PRIMARY KEY,
+    city VARCHAR2(50),
+    street VARCHAR2(100)
+);
+
+CREATE TABLE Works (
+    employee_name VARCHAR2(50),
+    company_name VARCHAR2(100),
+    salary NUMBER,
+    FOREIGN KEY (employee_name) REFERENCES Employee(employee_name)
+);
+
+CREATE TABLE Company (
+    company_name VARCHAR2(100) PRIMARY KEY,
+    city VARCHAR2(50)
+);
+
+CREATE TABLE Manages (
+    employee_name VARCHAR2(50),
+    manager_name VARCHAR2(50),
+    FOREIGN KEY (employee_name) REFERENCES Employee(employee_name),
+    FOREIGN KEY (manager_name) REFERENCES Employee(employee_name)
+);
+
+INSERT INTO Employee (employee_name, city, street) 
+VALUES ('Alice', 'New York', '5th Avenue');
+
+INSERT INTO Employee (employee_name, city, street) 
+VALUES ('Bob', 'San Francisco', 'Market Street');
+
+INSERT INTO Employee (employee_name, city, street) 
+VALUES ('Charlie', 'Los Angeles', 'Sunset Blvd');
+
+INSERT INTO Employee (employee_name, city, street) 
+VALUES ('Jones', 'Chicago', 'Lake Shore Drive');
+
+INSERT INTO Works (employee_name, company_name, salary) 
+VALUES ('Alice', 'First Bank Corporation', 12000);
+
+INSERT INTO Works (employee_name, company_name, salary) 
+VALUES ('Bob', 'First Bank Corporation', 9500);
+
+INSERT INTO Works (employee_name, company_name, salary) 
+VALUES ('Charlie', 'Small Bank Corporation', 11000);
+
+INSERT INTO Works (employee_name, company_name, salary) 
+VALUES ('Jones', 'First Bank Corporation', 10000);
+
+INSERT INTO Company (company_name, city) 
+VALUES ('First Bank Corporation', 'New York');
+
+INSERT INTO Company (company_name, city) 
+VALUES ('Small Bank Corporation', 'San Francisco');
+
+INSERT INTO Manages (employee_name, manager_name) 
+VALUES ('Bob', 'Alice');
+
+INSERT INTO Manages (employee_name, manager_name) 
+VALUES ('Charlie', 'Jones');
+
+SELECT * FROM Employee;
+SELECT * FROM Works;
+SELECT * FROM Company;
+SELECT * FROM Manages;
+
+SELECT employee_name
+FROM Works
+WHERE company_name = 'First Bank Corporation';
+
+SELECT e.employee_name, e.city
+FROM Employee e
+JOIN Works w ON e.employee_name = w.employee_name
+WHERE w.company_name = 'First Bank Corporation';
+
+JOIN Works w ON e.employee_name = w.employee_name
+WHERE w.company_name = 'First Bank Corporation' AND w.salary > 10000;
+
+SELECT e.employee_name, e.city
+FROM Employee e
+JOIN Works w ON e.employee_name = w.employee_name
+JOIN Company c ON w.company_name = c.company_name
+WHERE e.city = c.city;
+
+SELECT e.employee_name
+FROM Employee e
+JOIN Works w ON e.employee_name = w.employee_name
+JOIN Manages m ON e.employee_name = m.employee_name
+JOIN Employee manager ON m.manager_name = manager.employee_name
+WHERE e.city = manager.city AND e.street = manager.street;
+
+SELECT employee_name
+FROM Works
+WHERE company_name != 'First Bank Corporation';
+
+SELECT employee_name
+FROM Works w1
+WHERE w1.salary > ALL (
+    SELECT salary
+    FROM Works w2
+    WHERE w2.company_name = 'Small Bank Corporation'
+);
+
+SELECT company_name
+FROM Company c
+WHERE NOT EXISTS (
+    SELECT city
+    FROM Company
+    WHERE company_name = 'Small Bank Corporation'
+    AND city NOT IN (SELECT city FROM Company WHERE company_name = c.company_name)
+);
+
+SELECT e.employee_name, e.company_name
+FROM Works w
+JOIN Employee e ON w.employee_name = e.employee_name
+WHERE w.salary > (
+    SELECT AVG(salary)
+    FROM Works
+    WHERE company_name = w.company_name
+);
+
+SELECT company_name
+FROM Works
+GROUP BY company_name
+ORDER BY COUNT(employee_name) DESC
+LIMIT 1;
+
+SELECT company_name
+FROM Works
+GROUP BY company_name
+ORDER BY SUM(salary) ASC
+LIMIT 1;
+
+SELECT company_name
+FROM Works
+GROUP BY company_name
+HAVING AVG(salary) > (
+    SELECT AVG(salary)
+    FROM Works
+    WHERE company_name = 'First Bank Corporation'
+);
+
+UPDATE Employee
+SET city = 'Newtown'
+WHERE employee_name = 'Jones';
+
+UPDATE Works
+SET salary = salary * 1.10
+WHERE company_name = 'First Bank Corporation';
+
+DELETE FROM Works
+WHERE company_name = 'Small Bank Corporation';
+
+
+
+
+EXPLANATION:
+
+Here's a more detailed explanation of the SQL code:
+
+### 1. **Database and Table Creation:**
+   - **Database Creation:**
+     - `CREATE DATABASE ASSIGN1;` creates a new database called **ASSIGN1**.
+     - `USE ASSIGN1;` switches to using this database for further operations.
+   
+   - **Tables Creation:**
+     - **Employee** table: Stores information about employees, including their name, city, and street address.
+       - The `employee_name` field is the **primary key**, ensuring each employee has a unique name.
+     - **Works** table: Tracks which employees work at which companies and their salary.
+       - `employee_name` is a foreign key that references the **Employee** table.
+     - **Company** table: Stores information about companies, such as their name and the city they are located in.
+       - The `company_name` field is the **primary key**, ensuring each company is uniquely identified.
+     - **Manages** table: Tracks the manager-employee relationship within the company.
+       - Both `employee_name` and `manager_name` are foreign keys referencing the **Employee** table.
+
+### 2. **Inserting Data:**
+   - Data is inserted into the **Employee**, **Works**, **Company**, and **Manages** tables to populate the database with sample employee and company data:
+     - Employees are added with names, cities, and street addresses.
+     - The **Works** table connects employees to companies and their salary details.
+     - The **Company** table holds details of the companies, such as the city where the company is located.
+     - The **Manages** table defines which employee manages which other employee (manager-employee relationship).
+
+### 3. **SELECT Queries:**
+   The `SELECT` queries are used to retrieve data from the database. Here are some of the key queries:
+
+   - **Employee Names Working for 'First Bank Corporation':**
+     - `SELECT employee_name FROM Works WHERE company_name = 'First Bank Corporation';`
+     - Retrieves the names of all employees who work at the "First Bank Corporation".
+
+   - **Employee Details with 'First Bank Corporation':**
+     - `SELECT e.employee_name, e.city FROM Employee e JOIN Works w ON e.employee_name = w.employee_name WHERE w.company_name = 'First Bank Corporation';`
+     - This query retrieves the employee name and city for all employees working at "First Bank Corporation". It uses an `INNER JOIN` between the **Employee** and **Works** tables to match employees to their companies.
+
+   - **Employees Living in the Same City as Their Company:**
+     - `SELECT e.employee_name, e.city FROM Employee e JOIN Works w ON e.employee_name = w.employee_name JOIN Company c ON w.company_name = c.company_name WHERE e.city = c.city;`
+     - This query joins three tables: **Employee**, **Works**, and **Company**. It retrieves employees who live in the same city where their company is located.
+
+   - **Employees Living on the Same Street as Their Manager:**
+     - `SELECT e.employee_name FROM Employee e JOIN Works w ON e.employee_name = w.employee_name JOIN Manages m ON e.employee_name = m.employee_name JOIN Employee manager ON m.manager_name = manager.employee_name WHERE e.city = manager.city AND e.street = manager.street;`
+     - This query retrieves employees who live on the same street as their manager, using a `JOIN` between **Employee**, **Works**, **Manages**, and **Employee** (for the manager details).
+
+   - **Employees Not Working for 'First Bank Corporation':**
+     - `SELECT employee_name FROM Works WHERE company_name != 'First Bank Corporation';`
+     - Retrieves the names of employees who are not working for "First Bank Corporation".
+
+   - **Employees Earning More Than Each Employee at 'Small Bank Corporation':**
+     - `SELECT employee_name FROM Works w1 WHERE w1.salary > ALL (SELECT salary FROM Works w2 WHERE w2.company_name = 'Small Bank Corporation');`
+     - This query compares the salary of employees at any company to the salaries of employees at "Small Bank Corporation". It retrieves employees who earn more than every employee in that company.
+
+   - **Companies Located in the Same Cities as 'Small Bank Corporation':**
+     - `SELECT company_name FROM Company c WHERE NOT EXISTS (SELECT city FROM Company WHERE company_name = 'Small Bank Corporation' AND city NOT IN (SELECT city FROM Company WHERE company_name = c.company_name));`
+     - This query finds companies located in all the cities where "Small Bank Corporation" is located. It uses a `NOT EXISTS` clause to compare cities between the companies.
+
+   - **Employees Earning More Than the Average Salary in Their Company:**
+     - `SELECT e.employee_name, e.company_name FROM Works w JOIN Employee e ON w.employee_name = e.employee_name WHERE w.salary > (SELECT AVG(salary) FROM Works WHERE company_name = w.company_name);`
+     - This query retrieves employees who earn more than the average salary at their respective company. It uses a subquery to calculate the average salary for each company.
+
+   - **Company with the Most Employees:**
+     - `SELECT company_name FROM Works GROUP BY company_name ORDER BY COUNT(employee_name) DESC LIMIT 1;`
+     - This query finds the company with the highest number of employees by grouping records by company and counting the number of employees.
+
+   - **Company with the Smallest Payroll:**
+     - `SELECT company_name FROM Works GROUP BY company_name ORDER BY SUM(salary) ASC LIMIT 1;`
+     - This query finds the company with the smallest total payroll by grouping records by company and summing the salaries.
+
+   - **Companies with Higher Average Salaries Than 'First Bank Corporation':**
+     - `SELECT company_name FROM Works GROUP BY company_name HAVING AVG(salary) > (SELECT AVG(salary) FROM Works WHERE company_name = 'First Bank Corporation');`
+     - This query finds companies where the average salary is higher than that at "First Bank Corporation".
+
+### 4. **Update & Delete Queries:**
+   - **Update City of 'Jones' to 'Newtown':**
+     - `UPDATE Employee SET city = 'Newtown' WHERE employee_name = 'Jones';`
+     - This updates the city of the employee "Jones" to "Newtown".
+
+   - **Give a 10% Raise to Employees at 'First Bank Corporation':**
+     - `UPDATE Works SET salary = salary * 1.10 WHERE company_name = 'First Bank Corporation';`
+     - This increases the salary by 10% for all employees working at "First Bank Corporation".
+
+   - **Delete Employees Working at 'Small Bank Corporation':**
+     - `DELETE FROM Works WHERE company_name = 'Small Bank Corporation';`
+     - This deletes all records from the **Works** table where employees work at "Small Bank Corporation".
+
+### Summary:
+This SQL code provides a comprehensive example of managing employee, company, and work-related data. It:
+- Defines tables for employees, their works, companies, and managers.
+- Inserts sample data for employees, companies, and their relationships.
+- Uses `SELECT` queries to retrieve and filter data based on various conditions.
+- Demonstrates the use of `JOIN`, subqueries, aggregation, and conditional filtering.
+- Includes `UPDATE` and `DELETE` operations to modify and clean up data. 
+
+These operations form the backbone of an employee and company management system, allowing for efficient querying and modification of relational data.
+

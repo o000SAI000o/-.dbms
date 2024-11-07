@@ -1,0 +1,259 @@
+CODE:
+
+CREATE DATABASE car;
+
+USE car;
+
+CREATE TABLE person (
+    driver_id INT PRIMARY KEY,
+    name VARCHAR(50) UNIQUE,
+    address VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE car (
+    license VARCHAR(15) PRIMARY KEY,
+    model VARCHAR(50),
+    year INT
+);
+
+CREATE TABLE accident (
+    report_number INT PRIMARY KEY,
+    date DATE,
+    location VARCHAR(100)
+);
+
+CREATE TABLE owns (
+    driver_id INT,
+    license VARCHAR(15),
+    FOREIGN KEY(driver_id) REFERENCES person(driver_id),
+    FOREIGN KEY (license) REFERENCES car(license),
+    PRIMARY KEY(driver_id, license)
+);
+
+CREATE TABLE participated (
+    report_number INT,
+    license VARCHAR(15),
+    driver_id INT,
+    damage_amount DECIMAL(10,2),
+    FOREIGN KEY (report_number) REFERENCES accident(report_number),
+    FOREIGN KEY (license) REFERENCES car(license),
+    FOREIGN KEY (driver_id) REFERENCES person(driver_id),
+    PRIMARY KEY (report_number, license, driver_id)
+);
+
+-- Inserting data into tables
+INSERT INTO person(driver_id, name, address) VALUES
+(1, 'John Smith', '123 Maple St'),
+(2, 'Alice Melon', '456 Oak St'),
+(3, 'Allison Ray', '789 Merry St'),
+(4, 'Jackson Clarkson', '101 Elm St'),
+(5, 'Jack Andrew', '121 Cedar St');
+
+INSERT INTO car(license, model, year) VALUES
+('abc123de', 'Toyota', 2015),
+('abd163de', 'Mazda', 2005),
+('ibd193de', 'Honda', 2012),
+('ipd393de', 'Ford', 2022),
+('kpd399de', 'Chevrolet', 2018);
+
+INSERT INTO accident(report_number, date, location) VALUES
+(101, '2009-06-15', 'Downtown'),
+(102, '2011-08-20', 'Suburb'),
+(103, '2015-11-30', 'Highway'),
+(104, '2009-03-10', 'City Center'),
+(105, '2020-01-22', 'Mall');
+
+INSERT INTO owns(driver_id, license) VALUES
+(1, 'abd163de'),
+(2, 'abc123de'),
+(3, 'kpd399de'),
+(4, 'ipd393de'),
+(5, 'ibd193de');
+
+INSERT INTO participated(report_number, license, driver_id, damage_amount) VALUES
+(101, 'abd163de', 1, 1500),
+(102, 'abc123de', 2, 2000),
+(103, 'kpd399de', 3, 800),
+(104, 'ipd393de', 4, 900),
+(105, 'ibd193de', 5, 3000);
+
+-- Query to count distinct drivers involved in accidents in 2009
+SELECT COUNT(DISTINCT o.driver_id) AS total_people
+FROM owns o
+JOIN participated pa ON o.license = pa.license
+JOIN accident a ON pa.report_number = a.report_number
+WHERE YEAR(a.date) = 2009;
+
+-- Insert new accident record
+INSERT INTO accident(report_number, date, location) VALUES
+(106, '2024-01-15', 'City Park');
+
+-- Deleting 'Mazda' ownership by 'John Smith'
+DELETE FROM owns
+WHERE license IN (SELECT license FROM car WHERE model = 'Mazda')
+AND driver_id = (SELECT driver_id FROM person WHERE name = 'John Smith');
+
+
+
+
+
+EXPLANATION:
+Certainly! Here's a more detailed explanation of the SQL code:
+
+### **1. Database Creation and Selection:**
+```sql
+CREATE DATABASE car;
+USE car;
+```
+- **`CREATE DATABASE car;`**: This command creates a new database named `car`. It's essentially the container where all your tables and data will reside.
+- **`USE car;`**: After creating the database, this command selects it for use. All subsequent operations will be performed in the `car` database.
+
+### **2. Table Creation:**
+- **person** table:
+  ```sql
+  create table person(
+      driver_id int primary key,
+      name varchar(50) unique,
+      address varchar(50) not null);
+  ```
+  - **`driver_id`**: A unique identifier for each driver. It is set as the `PRIMARY KEY`, ensuring each driver has a unique ID.
+  - **`name`**: Stores the driver's name. It is also marked `UNIQUE`, so no two drivers can have the same name.
+  - **`address`**: Stores the driver's address. The `NOT NULL` constraint ensures that every driver has an address.
+
+- **car** table:
+  ```sql
+  create table car(
+      license varchar(15) primary key,
+      model varchar(50),
+      year int);
+  ```
+  - **`license`**: The car's license plate number, which is the `PRIMARY KEY` ensuring each car has a unique license.
+  - **`model`**: The model name of the car (e.g., Toyota, Honda).
+  - **`year`**: The manufacturing year of the car.
+
+- **accident** table:
+  ```sql
+  create table accident(
+      report_number int primary key,
+      date Date,
+      location varchar(100));
+  ```
+  - **`report_number`**: A unique identifier for each accident report.
+  - **`date`**: The date the accident occurred.
+  - **`location`**: Where the accident took place (e.g., downtown, highway).
+
+- **owns** table (a relationship between `person` and `car`):
+  ```sql
+  create table owns(
+      driver_id int,
+      license varchar(15),
+      foreign key(driver_id) references person(driver_id),
+      foreign key (license) references car(license),
+      primary key(driver_id,license));
+  ```
+  - **`driver_id`**: Foreign key referring to the `driver_id` in the `person` table.
+  - **`license`**: Foreign key referring to the `license` in the `car` table.
+  - **Composite primary key**: Combines `driver_id` and `license` as a unique identifier for each ownership record.
+
+- **participated** table (records accidents involving cars and drivers):
+  ```sql
+  create table participated(
+      report_number int,
+      license varchar(15),
+      driver_id int,
+      damage_amount decimal(10,2),
+      foreign key (report_number) references accident(report_number),
+      foreign key (license) references car(license),
+      foreign key (driver_id) references person(driver_id),
+      primary key (report_number,license,driver_id));
+  ```
+  - **`report_number`**: Foreign key referring to the `accident` table's `report_number`.
+  - **`license`**: Foreign key referring to the `car` table's `license`.
+  - **`driver_id`**: Foreign key referring to the `person` table's `driver_id`.
+  - **`damage_amount`**: The amount of damage caused by the accident, stored as a decimal value.
+  - **Composite primary key**: Combines `report_number`, `license`, and `driver_id` to uniquely identify the records in the `participated` table.
+
+### **3. Data Insertion:**
+```sql
+insert into person(driver_id,name,address) values
+(1,'john smith','123 maple st'),
+(2,'alice melon','456 oak st'),
+(3,'allison ray','789 merry st'),
+(4,'jackson clarkson','101 elm st'),
+(5,'jack andrew','121 cedar st');
+```
+- **Inserting into `person`**: Adds 5 records for drivers with their respective IDs, names, and addresses.
+
+```sql
+insert into car(license,model,year) values
+('abc123de','toyota',2015),
+('abd163de','mazda',2005),
+('ibd193de','honda',2012),
+('ipd393de','ford',2022),
+('kpd399de','chevrolet',2018);
+```
+- **Inserting into `car`**: Adds 5 cars, each with a unique license plate, model, and year.
+
+```sql
+insert into accident(report_number,date,location) values
+(101,'2009-06-15','downtown'),
+(102,'2011-08-20','suburb'),
+(103,'2015-11-30','highway'),
+(104,'2009-03-10','city center'),
+(105,'2020-01-22','mall');
+```
+- **Inserting into `accident`**: Adds 5 accident records with a report number, date, and location for each.
+
+```sql
+insert into owns(driver_id,license) values
+(1,'abd163de'),
+(2,'abc123de'),
+(3,'kpd399de'),
+(4,'ipd393de'),
+(5,'ibd193de');
+```
+- **Inserting into `owns`**: Links drivers to the cars they own by their respective `driver_id` and `license`.
+
+```sql
+insert into participated(report_number,license,driver_id,damage_amount) values
+(101,'abd163de',1,1500),
+(102,'abc123de',2,2000),
+(103,'kpd399de',3,800),
+(104,'ipd393de',4,900),
+(105,'ibd193de',5,3000);
+```
+- **Inserting into `participated`**: Records which driver participated in which accident, along with the damage amount.
+
+### **4. Query:**
+```sql
+select count(distinct o.driver_id) as total_people
+from owns o
+join participated pa on o.license = pa.license
+join accident a on pa.report_number = a.report_number
+where year(a.date) = 2009;
+```
+- **Query Explanation**: This query counts how many unique drivers (`driver_id`) were involved in accidents in the year 2009.
+  - **`JOIN` operations**: The query joins the `owns`, `participated`, and `accident` tables to connect the drivers, cars, and accident reports.
+  - **`WHERE` clause**: Filters the accidents that occurred in the year 2009 using `year(a.date)`.
+
+### **5. Additional Data Modifications:**
+```sql
+insert into accident(report_number,date,location) values
+(106,'2024-01-15','city park');
+```
+- **Inserting a New Accident**: Adds a new accident report for 2024.
+
+```sql
+delete from owns
+where license in (select license from car where model = 'mazda')
+and driver_id = (select driver_id from person where name = 'john smith');
+```
+- **Delete Ownership**: This `DELETE` query removes the record from the `owns` table where "John Smith" owns a "Mazda". It uses subqueries to find the relevant `driver_id` and `license` plate.
+
+### **Summary of Key Concepts**:
+- **Foreign Keys**: Used to establish relationships between tables (e.g., `driver_id` links `person` and `owns`).
+- **Primary Keys**: Ensure each record is unique (e.g., `license` in `car`, `report_number` in `accident`).
+- **Composite Keys**: Used in the `owns` and `participated` tables to uniquely identify a record using more than one field.
+- **Subqueries**: Used in `DELETE` and `SELECT` operations to filter or calculate values based on other tables.
+
+This schema effectively models a database for tracking cars, drivers, accidents, and ownership, and allows for operations like inserting, querying, and deleting data based on these relationships.
