@@ -128,6 +128,163 @@ The code is a MySQL stored procedure that checks records in the `new_data` table
 ### Key Concepts:
 - **Cursors**: Used to loop over rows from both tables.
 - **Handlers**: Used to manage control flow when no more records are found in a cursor.
+
+
 - **Looping**: Inner and outer loops to compare records and insert missing ones.
 
 Let me know if you need more details or further clarification!
+
+
+concept:
+
+The concept behind the code you provided revolves around **database management**, **stored procedures**, and **cursor operations** in MySQL to insert records from one table (`new_data`) into another table (`old_data`) based on specific conditions. Here's a breakdown of the key concepts involved in the code:
+
+### 1. **Database Setup**:
+```sql
+CREATE DATABASE my_database;
+USE my_database;
+
+CREATE TABLE old_data (
+    roll INT,
+    name VARCHAR(20)
+);
+
+CREATE TABLE new_data (
+    roll INT,
+    name VARCHAR(20)
+);
+```
+- **Database Creation**: A new database `my_database` is created and selected for use.
+- **Table Creation**: Two tables, `old_data` and `new_data`, are created to store student roll numbers and names. Both tables have the same structure, consisting of `roll` and `name` columns.
+
+### 2. **Inserting Data into Tables**:
+```sql
+INSERT INTO old_data VALUES(1, 'ABC');
+INSERT INTO old_data VALUES(2, 'PQR');
+INSERT INTO old_data VALUES(3, 'LMN');
+INSERT INTO old_data VALUES(4, 'XYZ');
+
+INSERT INTO new_data VALUES(3, 'Krushna');
+INSERT INTO new_data VALUES(4, 'Yash');
+INSERT INTO new_data VALUES(5, 'Vishwa');
+INSERT INTO new_data VALUES(6, 'Alok');
+```
+- **Populating the Tables**: Some sample data is inserted into both `old_data` and `new_data` tables. The `old_data` table contains roll numbers `1, 2, 3, 4`, while the `new_data` table contains roll numbers `3, 4, 5, 6`.
+- The goal is to add new records from `new_data` into `old_data`, but only if the record doesn't already exist in `old_data`.
+
+### 3. **Stored Procedure**:
+A **stored procedure** is a set of SQL statements that can be executed as a single unit. The procedure `roll_list` is defined to compare records from `new_data` and `old_data` and insert those from `new_data` that are not present in `old_data`.
+
+```sql
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS roll_list$$
+
+CREATE PROCEDURE roll_list()
+BEGIN
+    DECLARE oldRollNo INT;
+    DECLARE newRollNo INT;
+    DECLARE oldName VARCHAR(20);
+    DECLARE newName VARCHAR(20);
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE c1 CURSOR FOR SELECT roll, name FROM old_data;
+    DECLARE c2 CURSOR FOR SELECT roll, name FROM new_data;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    
+    OPEN c2;
+    
+    loop1: LOOP
+        FETCH c2 INTO newRollNo, newName;
+        IF done THEN
+            LEAVE loop1;
+        END IF;
+        
+        SET done = FALSE;
+        
+        OPEN c1;
+        
+        loop2: LOOP
+            FETCH c1 INTO oldRollNo, oldName;
+            IF done THEN
+                LEAVE loop2;
+            END IF;
+
+            IF oldRollNo = newRollNo THEN
+                LEAVE loop2;
+            END IF;
+        END LOOP;
+
+        IF done THEN
+            INSERT INTO old_data (roll, name) VALUES (newRollNo, newName);
+        END IF;
+
+        CLOSE c1;
+    END LOOP;
+
+    CLOSE c2;
+
+END$$
+
+DELIMITER ;
+```
+
+### Key Concepts in the Stored Procedure:
+
+#### **1. Cursors**:
+- **What is a Cursor?**
+  - A **cursor** in SQL is a pointer to a result set that allows you to process each row of the result set individually.
+  - Two cursors are defined:
+    - `c1`: Fetches records from `old_data` to compare against.
+    - `c2`: Fetches records from `new_data` to insert if they are not already in `old_data`.
+
+#### **2. Variables**:
+- **Variables Defined**: Several variables are declared to hold the roll numbers and names (`oldRollNo`, `newRollNo`, `oldName`, `newName`).
+- **Done Flag**: The `done` flag is used to mark when a cursor has reached the end of its result set, signaling that no more data is available for processing.
+
+#### **3. Control Flow with Loops**:
+- **Outer Loop (`loop1`)**: This loop iterates over all records in `new_data` (using `c2`). It processes each record to check if it exists in `old_data`.
+- **Inner Loop (`loop2`)**: This nested loop iterates over all records in `old_data` (using `c1`) to compare each record with the current record from `new_data`.
+- **Condition**: If the roll number from `new_data` matches a roll number in `old_data`, the inner loop is exited using the `LEAVE` statement.
+- **Insertion**: If no matching roll number is found in `old_data`, the record from `new_data` is inserted into `old_data`.
+
+#### **4. Closing Cursors**:
+- The cursors are **closed** after the loops have finished to release the resources.
+
+#### **5. Error Handling**:
+- The `CONTINUE HANDLER FOR NOT FOUND` sets the `done` flag to `TRUE` when no more data is found in the cursor, thus breaking out of the loop.
+
+### 4. **Calling the Procedure**:
+```sql
+CALL roll_list();
+```
+- This executes the stored procedure `roll_list()`. It compares the records in `new_data` with `old_data` and inserts the new records from `new_data` into `old_data` that are not already present.
+
+### 5. **Verifying the Results**:
+```sql
+SELECT * FROM old_data;
+```
+- After executing the procedure, this query will show the updated contents of `old_data`. It should now include all records from `new_data` that were not already present in `old_data`.
+
+### Expected Output:
+```
+roll  | name
+--------------
+1     | ABC
+2     | PQR
+3     | LMN
+4     | XYZ
+5     | Vishwa
+6     | Alok
+```
+
+### Key Concepts Summarized:
+
+1. **Cursors**: A cursor is used to iterate through each row of a result set (in this case, the two tables `old_data` and `new_data`).
+2. **Stored Procedures**: A stored procedure is used to encapsulate a series of SQL statements into a single callable unit, allowing for more complex operations like looping and conditional logic.
+3. **Loops and Control Flow**: Loops (both inner and outer) help in comparing data row by row from `new_data` with `old_data`.
+4. **Insertions**: If a record in `new_data` is not found in `old_data`, it gets inserted into `old_data`.
+5. **Error Handling**: The `done` flag controls the flow and indicates when there are no more records to process in the cursor, preventing errors during iteration.
+
+This process is useful when you need to synchronize or merge data between two tables and ensure that only non-duplicate records are added to a target table.
+
+
