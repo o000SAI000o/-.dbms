@@ -66,3 +66,79 @@ Copy code
 The factorial of 5 is 120
 ........
 This code calculates the factorial of a positive integer or displays an error if the input is negative.
+
+
+
+concept:
+
+
+The **concept** behind the above PL/SQL code is to **calculate the factorial of a given number** with proper error handling. It demonstrates key features of PL/SQL, including **variable declaration**, **control flow** (such as `if-else` and loops), **exception handling**, and **output generation**. Here’s a detailed breakdown of the core concepts:
+
+### 1. **Variable Declaration:**
+   - The code begins with the **DECLARE** section, where variables are defined. In this case:
+     - `num`: An integer variable to hold the user input, representing the number for which the factorial is to be calculated.
+     - `factorial`: An integer initialized to 1. This will store the result of the factorial calculation as the program progresses.
+
+   **Concept**: PL/SQL allows declaring variables to store data that can be used later in the program.
+
+### 2. **Substitution Variable:**
+   ```sql
+   num := &num;
+   ```
+   - The `&num` is a **substitution variable**. When the block is executed, it prompts the user to enter a value for `num`. This allows dynamic input at runtime.
+
+   **Concept**: Substitution variables allow dynamic input during execution, which is useful for reusing code with different values.
+
+### 3. **Control Flow:**
+   - The **if-else** control structure is used to check the validity of the user input:
+     - If `num` is **negative**, the program raises an exception and prevents further execution.
+     - If `num` is **positive or zero**, the program calculates the factorial using a `for` loop.
+
+   **Concept**: **Conditional statements** (if-else) allow branching based on conditions, while loops (`for` in this case) allow iteration through a sequence of numbers.
+
+### 4. **Factorial Calculation:**
+   ```sql
+   for i in 1..num loop
+       factorial := factorial * i;
+   end loop;
+   ```
+   - A **for loop** is used to calculate the factorial. The loop iterates from `1` to `num`, multiplying the `factorial` variable by the loop index `i` in each iteration. The factorial of a number is the product of all integers from 1 to that number (e.g., factorial of 5 is `5 * 4 * 3 * 2 * 1`).
+
+   **Concept**: **Loops** allow you to repeat a set of actions a specified number of times. In this case, it repeats the multiplication operation `num` times.
+
+### 5. **Displaying the Result:**
+   ```sql
+   dbms_output.put_line('The factorial of ' || num || ' is ' || factorial);
+   ```
+   - **DBMS_OUTPUT.PUT_LINE** is used to print the result to the console. This built-in procedure outputs the message: `"The factorial of <num> is <factorial>"`.
+
+   **Concept**: **DBMS_OUTPUT.PUT_LINE** is a PL/SQL procedure used to display messages or output for debugging or user feedback.
+
+### 6. **Error Handling:**
+   ```sql
+   exception
+       when others then
+           dbms_output.put_line('Error : ' || sqlerrm);
+   ```
+   - The **EXCEPTION** block is used to handle any errors that might occur during execution. If an error is raised, the `when others` clause catches it and prints the error message using the `SQLERRM` function, which provides the error message associated with the most recent exception.
+
+   **Concept**: **Exception handling** in PL/SQL allows you to manage runtime errors gracefully. The `when others` handler ensures that the program doesn’t crash unexpectedly, and instead, the error message is logged.
+
+### 7. **Raising Application Errors:**
+   ```sql
+   raise_application_error(-20001, 'factorial is not defined for negative numbers');
+   ```
+   - This raises a custom application error with the error code `-20001` and a specific message when the input number is negative. This stops the program execution and displays a meaningful error message.
+
+   **Concept**: **Raising application errors** allows developers to define custom error codes and messages, providing more control over error handling and giving users clear feedback on issues.
+
+### Overall Concept:
+
+The core **concept** of the code is to demonstrate **factorial calculation** while handling:
+- **Validations** (ensuring the number is non-negative).
+- **User input** (using substitution variables for dynamic input).
+- **Iteration** (calculating factorial via a loop).
+- **Error handling** (managing invalid inputs or other exceptions).
+- **Output** (displaying the result to the user).
+
+This is an example of procedural programming in PL/SQL, where you combine logic, iteration, and error handling to perform a task (factorial calculation) robustly and interactively.
