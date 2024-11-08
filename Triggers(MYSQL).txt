@@ -111,6 +111,99 @@ In short, the code ensures that any changes in the library table are automatical
 
 
 
+concept:
+
+
+
+The concept behind the provided code involves **triggers** and **data backup** in a relational database system (in this case, MySQL). The purpose of the code is to ensure that whenever records in the `library` table are inserted, updated, or deleted, a corresponding log of these actions is automatically recorded in a backup table (`library_backup`). This is crucial for tracking changes and ensuring that historical data can be retrieved if needed.
+
+### Key Concepts:
+
+1. **Database Creation and Structure**:
+   - A **database** called `library_system` is created to store information about books in a library.
+   - Two **tables** are created:
+     - `library`: Contains book records with details like `book_id`, `book_name`, and `author`.
+     - `library_backup`: A backup table to record any changes (INSERT, UPDATE, DELETE) made to the `library` table. It includes `backup_id` (auto-increment primary key), `book_id`, `book_name`, `author`, and an `action` column that specifies the type of action (INSERT, UPDATE, DELETE).
+
+2. **Triggers**:
+   Triggers are special stored procedures that are automatically executed in response to certain events (INSERT, UPDATE, DELETE) on a table. In this code, three triggers are defined for the `library` table:
+   
+   - **`before_update` Trigger**:
+     - Executed **before** an update operation on the `library` table.
+     - It inserts a backup of the record (before the update) into the `library_backup` table with the action `'UPDATE'`. This allows for auditing and tracking of changes to book records.
+     - Example:
+       ```sql
+       INSERT INTO library_backup(book_id, book_name, author, action)
+       VALUES (OLD.book_id, OLD.book_name, OLD.author, 'UPDATE');
+       ```
+     - The `OLD` keyword refers to the values of the record **before** the update.
+
+   - **`before_delete` Trigger**:
+     - Executed **before** a delete operation on the `library` table.
+     - It inserts a backup of the deleted record into the `library_backup` table with the action `'DELETE'`.
+     - Example:
+       ```sql
+       INSERT INTO library_backup(book_id, book_name, author, action)
+       VALUES (OLD.book_id, OLD.book_name, OLD.author, 'DELETE');
+       ```
+     - The `OLD` keyword refers to the values of the record **before** deletion.
+
+   - **`after_insert` Trigger**:
+     - Executed **after** an insert operation on the `library` table.
+     - It inserts the newly inserted record into the `library_backup` table with the action `'INSERT'`.
+     - Example:
+       ```sql
+       INSERT INTO library_backup(book_id, book_name, author, action)
+       VALUES (NEW.book_id, NEW.book_name, NEW.author, 'INSERT');
+       ```
+     - The `NEW` keyword refers to the values of the record **after** insertion.
+
+3. **Why Triggers Are Used**:
+   - **Automation**: Triggers automatically log actions without requiring manual intervention, ensuring that no changes to the `library` table go unrecorded.
+   - **Data Integrity**: The backup table maintains a history of changes made to the `library` table, which is useful for auditing, rollback, or recovery.
+   - **Tracking Changes**: By logging the type of action (INSERT, UPDATE, DELETE), you can track what changes were made to each book record over time.
+
+4. **Data Backup Mechanism**:
+   - The `library_backup` table serves as a **backup** of all changes made to the `library` table. It stores:
+     - The book's details before any modification (in the case of updates or deletes).
+     - The book's details after insertion (for new records).
+     - The action that was performed (INSERT, UPDATE, DELETE).
+   - This ensures that a history of changes to the library system is maintained for auditing purposes or future restoration.
+
+### Example Scenario:
+
+Imagine you have a `library` table with the following book records:
+
+| book_id | book_name      | author         |
+|---------|----------------|----------------|
+| 1       | "Database 101" | "John Doe"     |
+| 2       | "MySQL Basics" | "Jane Smith"   |
+
+Now, let's consider the following actions:
+1. **Insert** a new book: A new book `"SQL Advanced"` by `"Alice"` is added.
+   - The `after_insert` trigger inserts this record into the `library_backup` table with the action `'INSERT'`.
+   
+2. **Update** a book: The author of `"Database 101"` is changed to `"John A. Doe"`.
+   - The `before_update` trigger backs up the old record (before the update) into the `library_backup` table with the action `'UPDATE'`.
+
+3. **Delete** a book: The book `"MySQL Basics"` is deleted from the library.
+   - The `before_delete` trigger backs up the deleted record into the `library_backup` table with the action `'DELETE'`.
+
+After these operations, the `library_backup` table will have records like:
+
+| backup_id | book_id | book_name      | author        | action |
+|-----------|---------|----------------|---------------|--------|
+| 1         | 1       | "Database 101" | "John Doe"    | UPDATE |
+| 2         | 2       | "MySQL Basics" | "Jane Smith"  | DELETE |
+| 3         | 3       | "SQL Advanced" | "Alice"       | INSERT |
+
+This way, you have a backup of every action that has affected the `library` table, ensuring data consistency and providing an audit trail.
+
+### Summary:
+- The code creates a system to track and back up changes to book records in the `library` table.
+- Triggers automatically capture **inserts**, **updates**, and **deletes** on the `library` table and store these changes in the `library_backup` table.
+- This system ensures that you have an historical log of changes for auditing, recovery, or version control purposes.
+
 
 
 
