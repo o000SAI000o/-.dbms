@@ -124,3 +124,100 @@ The code provided demonstrates how to use PL/SQL to calculate and insert the are
 - For radius 9: Area = 3.14 * (9 * 9) = 243
 
 The script successfully inserted the calculated areas of circles with radii 5 to 9 into the table.
+
+
+concept:
+
+
+The provided code demonstrates how to use PL/SQL in Oracle to calculate the area of a circle for different radii and insert the results into a table. Here's a detailed breakdown of the concepts behind the code:
+
+### 1. **Table Creation (`circlearea`)**:
+```sql
+create table circlearea(radius int, area int);
+```
+- **Purpose**: This statement creates a table named `circlearea` with two columns:
+  - `radius`: Stores the radius of a circle (data type: `int`).
+  - `area`: Stores the area of the circle calculated using the radius (data type: `int`).
+
+### 2. **PL/SQL Block**:
+The PL/SQL block calculates the area of a circle for a range of radii (from 5 to 9) and inserts the corresponding results into the `circlearea` table.
+
+#### **PL/SQL Variables Declaration**:
+```sql
+declare
+    r1 circlearea.radius%type;
+    cir_area int;
+    pi int;
+```
+- `r1`: A variable to hold the radius value (its type is based on the `radius` column in the `circlearea` table).
+- `cir_area`: A variable to store the calculated area of the circle.
+- `pi`: A variable to store the value of pi (π). Here, `pi` is mistakenly declared as `int`, but it should ideally be a floating-point type (`NUMBER` or `FLOAT`) since pi is a decimal.
+
+#### **Variable Initialization**:
+```sql
+begin
+    r1 := 5;
+    pi := 3.14;
+```
+- `r1` is initialized to `5`, the starting radius.
+- `pi` is initialized to `3.14`, an approximation of the value of pi.
+
+#### **For Loop**:
+```sql
+for r1 in 5..9 loop
+    cir_area := pi * (r1 * r1); 
+    insert into circlearea values(r1, cir_area);
+end loop;
+```
+- This `for` loop iterates through the radii from `5` to `9` (inclusive).
+  - The formula for calculating the area of a circle is \( \text{Area} = \pi \times r^2 \), where `r` is the radius.
+  - The value of `cir_area` is calculated by multiplying `pi` with the square of the current radius (`r1 * r1`).
+  - The result is inserted into the `circlearea` table with the current radius and calculated area.
+
+#### **Area Calculation**:
+For each iteration of the loop, the area of the circle is calculated using the formula:
+\[
+\text{Area} = \pi \times r^2
+\]
+Where:
+- `r1` is the radius.
+- The area is calculated and inserted into the `circlearea` table.
+
+#### **Inserting Results into the Table**:
+```sql
+insert into circlearea values(r1, cir_area);
+```
+- After calculating the area for the given radius, the values of `r1` (radius) and `cir_area` (calculated area) are inserted into the `circlearea` table.
+
+### 3. **Results**:
+
+After the PL/SQL block is executed, the following data is inserted into the `circlearea` table:
+```sql
+select * from circlearea;
+```
+**Output**:
+```
+    RADIUS       AREA
+---------- ----------
+         5         75
+         6        108
+         7        147
+         8        192
+         9        243
+```
+- For each radius from `5` to `9`, the area is calculated using the formula \( \pi \times r^2 \) and inserted into the table.
+- These results show the radius and the corresponding area for each circle.
+
+### 4. **Summary of Concepts**:
+
+- **PL/SQL Block**: This is a procedure for performing operations like calculations, loops, and inserts in Oracle databases.
+- **Table Insertion**: The calculated areas for different radii are inserted into the `circlearea` table using the `INSERT INTO` statement.
+- **Formula for Area**: The code uses the standard circle area formula \( \pi \times r^2 \) to calculate the area.
+- **For Loop**: The `for` loop helps in iterating over a range of values (from radius `5` to `9`), and the area is calculated and inserted for each radius.
+- **Data Types**: The use of `int` for `pi` is incorrect because `pi` should be a floating-point value. In practice, `pi` should be declared as `NUMBER` or `FLOAT`.
+
+### 5. **Potential Improvements**:
+- **Data Type for Pi**: `pi` should be declared as a floating-point type (e.g., `NUMBER` or `FLOAT`) to avoid truncation errors.
+- **Precision of Pi**: Use a more accurate value for `pi`, such as `3.14159265358979`, to improve the accuracy of the area calculation.
+
+This code demonstrates how PL/SQL can be used to perform calculations in a loop and store the results in a database table.
