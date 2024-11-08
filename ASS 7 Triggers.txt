@@ -1,0 +1,60 @@
+ASS 7 Triggers
+
+CREATE TABLE Library (
+    book_id INT PRIMARY KEY,
+    book_name VARCHAR2(100),
+    author VARCHAR2(100),
+    year INT
+);
+
+CREATE TABLE Library_Audit (
+    audit_id INT PRIMARY KEY,
+    action_type VARCHAR2(20),
+    book_id INT,
+    old_book_name VARCHAR2(100),
+    old_author VARCHAR2(100),
+    old_year INT,
+    change_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    changed_by VARCHAR2(50)
+);
+
+CREATE SEQUENCE library_audit_seq
+START WITH 1
+INCREMENT BY 1;
+
+CREATE OR REPLACE TRIGGER before_update_library
+BEFORE UPDATE ON Library
+FOR EACH ROW
+BEGIN
+    INSERT INTO Library_Audit (audit_id, action_type, book_id, old_book_name, old_author, old_year, changed_by)
+    VALUES (library_audit_seq.NEXTVAL, 'UPDATE', :OLD.book_id, :OLD.book_name, :OLD.author, :OLD.year, USER);
+END;
+/
+
+CREATE OR REPLACE TRIGGER before_delete_library
+BEFORE DELETE ON Library
+FOR EACH ROW
+BEGIN
+    INSERT INTO Library_Audit (audit_id, action_type, book_id, old_book_name, old_author, old_year, changed_by)
+    VALUES (library_audit_seq.NEXTVAL, 'DELETE', :OLD.book_id, :OLD.book_name, :OLD.author, :OLD.year, USER);
+END;
+/
+
+
+CREATE OR REPLACE TRIGGER after_update_library
+AFTER UPDATE ON Library
+FOR EACH ROW
+BEGIN
+    INSERT INTO Library_Audit (audit_id, action_type, book_id, old_book_name, old_author, old_year, changed_by)
+    VALUES (library_audit_seq.NEXTVAL, 'UPDATE', :OLD.book_id, :OLD.book_name, :OLD.author, :OLD.year, USER);
+END;
+/
+
+CREATE OR REPLACE TRIGGER after_delete_library
+AFTER DELETE ON Library
+FOR EACH ROW
+BEGIN
+    INSERT INTO Library_Audit (audit_id, action_type, book_id, old_book_name, old_author, old_year, changed_by)
+    VALUES (library_audit_seq.NEXTVAL, 'DELETE', :OLD.book_id, :OLD.book_name, :OLD.author, :OLD.year, USER);
+END;
+/
