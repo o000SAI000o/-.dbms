@@ -203,3 +203,48 @@ Sure! Let me elaborate on the key parts of the script to give you a clearer unde
 - **Synonyms** provide a convenient way to reference tables, making the code cleaner or simplifying access, especially across different schemas.
 
 By creating these SQL objects, the script manages and manipulates relational data efficiently, allowing for easy querying, updates, and retrieval of important information.
+
+
+concept:
+
+
+The SQL code you provided demonstrates the use of **synonyms** and some basic SQL operations such as **update**, **select**, and **drop synonym**. Here's the detailed explanation of the concepts behind each part of the code:
+
+### **1. Update Statement**
+```sql
+UPDATE dep_synonym
+SET account_number = 1003
+WHERE customer_name = 'Alice Brown';
+```
+
+- **Concept**: The `UPDATE` statement is used to modify existing records in a table. The `SET` clause specifies the new values for one or more columns, and the `WHERE` clause limits the rows to be updated based on a condition.
+  - **Synonym**: `dep_synonym` is likely a **synonym** for another table. In SQL, a **synonym** is an alias or alternate name for a table, view, sequence, or other database object. The synonym allows you to refer to a table indirectly using a different name. 
+  - **Purpose**: This statement is updating the `account_number` column of the table referred to by `dep_synonym` to 1003, but only for rows where the `customer_name` is 'Alice Brown'. 
+
+### **2. Select Statement (Verification)**
+```sql
+SELECT * FROM Depositors;
+```
+
+- **Concept**: The `SELECT` statement is used to retrieve data from one or more tables. This query retrieves all columns from the `Depositors` table to verify that the update operation has been executed correctly.
+  - **Purpose**: This verifies that the change to `account_number` was applied to the correct row and that the `dep_synonym` alias reflects this change on the underlying table (likely `Depositors`).
+
+### **3. Drop Synonym Statement**
+```sql
+DROP SYNONYM dep_synonym;
+```
+
+- **Concept**: The `DROP SYNONYM` command removes a synonym from the database. A synonym is a shorthand reference to another database object (table, view, etc.). When the synonym is no longer needed, it can be dropped.
+  - **Purpose**: This command deletes the `dep_synonym` synonym from the database, which means any future references to `dep_synonym` will no longer be valid. It does not delete the underlying table that the synonym refers to, just the alias.
+  
+### **Why Use Synonyms?**
+- **Synonym**: Synonyms are used to simplify the referencing of database objects, especially when the objects are in a different schema or are frequently renamed. Instead of always referring to the original table, you can use a synonym to reference it more easily.
+  - Example: You may have a table named `customer_details` but refer to it as `dep_synonym` for convenience in certain queries. 
+  - It also helps in abstracting the actual structure of the database, making it easier to migrate or change the database schema without affecting users or applications that use the synonyms.
+
+### **Summary of Concepts**:
+1. **UPDATE Statement**: Modifies existing data in a table (or synonym).
+2. **SELECT Statement**: Retrieves and verifies the data from the table to confirm the update.
+3. **DROP SYNONYM**: Deletes a synonym, which is an alias for a database object.
+
+In this example, the synonym `dep_synonym` is used for easier access to the actual table (like `Depositors`), and after performing the necessary update and verification, the synonym is dropped. This is useful for administrative tasks in managing database objects and simplifying query writing.
