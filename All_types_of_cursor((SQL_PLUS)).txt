@@ -87,3 +87,69 @@ Example Output (based on the data provided)
 ="Skipped Roll No: 3 as already exist"
 
 This code efficiently updates o_roll with any new records from n_roll, while skipping duplicates.	
+
+
+
+
+Concept:
+
+The code you shared is a good example of *cursor management* in PL/SQL, combining both **explicit** and **implicit** cursors to perform operations based on conditions. Here’s a conceptual breakdown:
+
+### 1. What is a Cursor?
+
+In SQL, a **cursor** is a pointer that allows us to **retrieve, manipulate, and navigate through the result set** of a query row by row. In PL/SQL, cursors help manage data operations that involve multiple rows, especially when you need to perform row-by-row actions based on conditions.
+
+Cursors come in two main types:
+- **Implicit Cursors**: These are automatically created by PL/SQL for single-row `SELECT` statements and DML operations (`INSERT`, `UPDATE`, `DELETE`).
+- **Explicit Cursors**: These are user-defined and are explicitly declared and managed in the PL/SQL block. They offer more control, particularly when you need to fetch multiple rows or need to apply specific logic to each row.
+
+### 2. Purpose of the Code: Matching and Transferring Data with Duplicates Check
+
+The code’s purpose is to:
+- **Transfer new records** from one table (`n_roll`) to another (`o_roll`).
+- **Avoid duplicates** by skipping records that already exist in `o_roll`.
+
+To achieve this, the code:
+- Uses an explicit cursor to check for existing records in `o_roll`.
+- Uses an implicit cursor (in a `FOR` loop) to iterate over records in `n_roll`.
+
+### 3. Concepts Illustrated in the Code
+
+Here are the key concepts behind the code:
+
+#### A. **Explicit Cursor for Condition Checks**
+   - The **explicit cursor** `new_records` allows the code to search `o_roll` for a specific `roll` number.
+   - By parameterizing the cursor (`new_records(p_roll int)`), it can check if a specific `roll` from `n_roll` exists in `o_roll`.
+   - Explicit cursors offer flexibility, as they let you control when to open, fetch from, and close the cursor.
+
+#### B. **Implicit Cursor for Iteration (FOR Loop)**
+   - The code uses a `FOR` loop to implicitly create a cursor over all rows in `n_roll`. 
+   - This type of cursor simplifies code by handling the cursor opening, fetching, and closing automatically within the loop.
+   - The loop iterates over each record in `n_roll`, allowing the code to handle each row individually without explicitly managing a cursor.
+
+#### C. **Cursor Attributes** (`%NOTFOUND`)
+   - Cursor attributes like `%NOTFOUND` are used to check the state of the cursor:
+     - `%NOTFOUND` returns `true` if no data was found (i.e., if `new_records` did not fetch any row from `o_roll`).
+     - In this case, `%NOTFOUND` helps determine if the `roll` from `n_roll` exists in `o_roll`.
+   - This allows the code to conditionally insert records into `o_roll` only when they don’t already exist.
+
+#### D. **Row-by-Row Processing and Conditional Logic**
+   - Since cursors allow row-by-row processing, the code can apply specific logic to each row in `n_roll`.
+   - For each `roll` in `n_roll`, the code checks if it’s already in `o_roll`:
+     - **If not found** (`%NOTFOUND`), the record is inserted into `o_roll`.
+     - **If found** (meaning the roll already exists), the code skips that entry to avoid duplicates.
+
+### 4. Why Use Cursors?
+
+- **Cursors are useful** when you need fine-grained control over each row in a result set, especially when there are conditions that determine how each row should be handled.
+- **Explicit cursors** are powerful when you need to conditionally fetch data and handle complex row-by-row logic, as in this example, where the cursor helps avoid duplicate entries.
+- **Implicit cursors**, like those in the `FOR` loop, simplify iteration over result sets, making the code easier to write and read when only a straightforward row-by-row processing is needed.
+
+### Summary of the Concept
+
+The code effectively **manages data transfer with duplication checks** using:
+- An **explicit cursor** for checking if each roll number in `n_roll` already exists in `o_roll`.
+- An **implicit cursor** for iterating over `n_roll` records.
+- **Cursor attributes** to guide conditional logic and decide when to insert a new record or skip a duplicate.
+
+By using both explicit and implicit cursors, the code can efficiently manage the process of transferring unique records from one table to another without redundancy. This is especially useful in data migration, syncing, or scenarios where duplicate data must be avoided in relational databases.
